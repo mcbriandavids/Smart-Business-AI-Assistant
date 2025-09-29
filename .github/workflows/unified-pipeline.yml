@@ -245,8 +245,9 @@ jobs:
           echo "Deployment successful."
 
   # Stage 7: Auto-promotion (Dev to Main)
-  promote-to-main:
-    name: Promote to Main
+  # Stage 7: Auto-promotion (Dev to Default Branch)
+  promote-to-default:
+    name: Promote to Default Branch
     runs-on: ubuntu-latest
     needs: [setup, quality-gate, deploy]
     if: |
@@ -260,17 +261,22 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Promote dev to main
+
+      - name: Promote dev to default branch
         run: |
-          echo "Auto-promoting dev branch to main..."
-          git checkout main || git checkout -b main
-          git merge dev --no-ff -m "chore: Auto-promote dev to main after successful deployment [skip ci]"
-          git push origin main
-          echo "Successfully promoted dev to main"
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          echo "Auto-promoting dev branch to $DEFAULT_BRANCH..."
+
+          git checkout $DEFAULT_BRANCH || git checkout -b $DEFAULT_BRANCH
+          git merge dev --no-ff -m "chore: Auto-promote dev to $DEFAULT_BRANCH after successful deployment [skip ci]"
+          git push origin $DEFAULT_BRANCH
+
+          echo "Successfully promoted dev to $DEFAULT_BRANCH"
 
   # Stage 8: Notifications
   notify-failure:
