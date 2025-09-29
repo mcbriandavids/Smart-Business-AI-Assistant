@@ -206,67 +206,67 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     if: always()
-    
+
     steps:
-    - name: 📧 Send Success Email
-      if: needs.test.result == 'success' && needs.build.result == 'success'
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "✅ Build Successful - Smart Business AI Assistant"
-        to: ${{ secrets.NOTIFICATION_EMAIL }}
-        from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
-        html_body: |
-          <h2>✅ Build Completed Successfully</h2>
-          
-          <p><strong>Project:</strong> Smart Business AI Assistant</p>
-          <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
-          <p><strong>Commit:</strong> ${{ github.sha }}</p>
-          <p><strong>Author:</strong> ${{ github.actor }}</p>
-          
-          <h3>📊 Build Results:</h3>
-          <ul>
-            <li>✅ Tests: Passed</li>
-            <li>✅ Build: Successful</li>
-            <li>✅ Quality Checks: Passed</li>
-          </ul>
-          
-          <p><strong>🔗 <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View Build Details</a></strong></p>
-          
-          <hr>
-          <p><small>Smart Business AI Assistant - Automated Build System</small></p>
-          
-    - name: 📧 Send Failure Email
-      if: needs.test.result == 'failure' || needs.build.result == 'failure'
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "❌ Build Failed - Smart Business AI Assistant"
-        to: ${{ secrets.NOTIFICATION_EMAIL }}
-        from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
-        html_body: |
-          <h2>❌ Build Failed</h2>
-          
-          <p><strong>Project:</strong> Smart Business AI Assistant</p>
-          <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
-          <p><strong>Commit:</strong> ${{ github.sha }}</p>
-          <p><strong>Author:</strong> ${{ github.actor }}</p>
-          
-          <h3>📊 Build Results:</h3>
-          <ul>
-            <li>${{ needs.test.result == 'success' && '✅' || '❌' }} Tests: ${{ needs.test.result }}</li>
-            <li>${{ needs.build.result == 'success' && '✅' || '❌' }} Build: ${{ needs.build.result }}</li>
-          </ul>
-          
-          <p><strong>🔗 <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View Build Logs</a></strong></p>
-          
-          <p><em>Please check the logs and fix the issues.</em></p>
-          
-          <hr>
-          <p><small>Smart Business AI Assistant - Automated Build System</small></p>
+      - name: 📧 Send Success Email
+        if: needs.test.result == 'success' && needs.build.result == 'success'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Build Successful - Smart Business AI Assistant"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
+          html_body: |
+            <h2>✅ Build Completed Successfully</h2>
+
+            <p><strong>Project:</strong> Smart Business AI Assistant</p>
+            <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
+            <p><strong>Commit:</strong> ${{ github.sha }}</p>
+            <p><strong>Author:</strong> ${{ github.actor }}</p>
+
+            <h3>📊 Build Results:</h3>
+            <ul>
+              <li>✅ Tests: Passed</li>
+              <li>✅ Build: Successful</li>
+              <li>✅ Quality Checks: Passed</li>
+            </ul>
+
+            <p><strong>🔗 <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View Build Details</a></strong></p>
+
+            <hr>
+            <p><small>Smart Business AI Assistant - Automated Build System</small></p>
+
+      - name: 📧 Send Failure Email
+        if: needs.test.result == 'failure' || needs.build.result == 'failure'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ Build Failed - Smart Business AI Assistant"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
+          html_body: |
+            <h2>❌ Build Failed</h2>
+
+            <p><strong>Project:</strong> Smart Business AI Assistant</p>
+            <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
+            <p><strong>Commit:</strong> ${{ github.sha }}</p>
+            <p><strong>Author:</strong> ${{ github.actor }}</p>
+
+            <h3>📊 Build Results:</h3>
+            <ul>
+              <li>${{ needs.test.result == 'success' && '✅' || '❌' }} Tests: ${{ needs.test.result }}</li>
+              <li>${{ needs.build.result == 'success' && '✅' || '❌' }} Build: ${{ needs.build.result }}</li>
+            </ul>
+
+            <p><strong>🔗 <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View Build Logs</a></strong></p>
+
+            <p><em>Please check the logs and fix the issues.</em></p>
+
+            <hr>
+            <p><small>Smart Business AI Assistant - Automated Build System</small></p>

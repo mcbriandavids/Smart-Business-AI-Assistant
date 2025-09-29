@@ -15,173 +15,173 @@ jobs:
   notify-email:
     name: 📧 Send Email Notifications
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: 📥 Checkout Code
-      uses: actions/checkout@v4
-      
-    - name: 📧 Send PR Opened Email
-      if: github.event.action == 'opened'
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "🚀 New Pull Request: ${{ github.event.pull_request.title }}"
-        to: ${{ secrets.NOTIFICATION_EMAIL }}
-        from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
-        html_body: |
-          <h2>🚀 New Pull Request Opened</h2>
-          
-          <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
-          <p><strong>Title:</strong> ${{ github.event.pull_request.title }}</p>
-          <p><strong>Author:</strong> ${{ github.event.pull_request.user.login }}</p>
-          <p><strong>Branch:</strong> ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}</p>
-          
-          <h3>📋 Description:</h3>
-          <div style="background-color: #f6f8fa; padding: 10px; border-radius: 5px;">
-            ${{ github.event.pull_request.body }}
-          </div>
-          
-          <h3>📊 Changes:</h3>
-          <ul>
-            <li>✅ Files changed: ${{ github.event.pull_request.changed_files }}</li>
-            <li>➕ Additions: ${{ github.event.pull_request.additions }}</li>
-            <li>➖ Deletions: ${{ github.event.pull_request.deletions }}</li>
-          </ul>
-          
-          <p><strong>🔗 <a href="${{ github.event.pull_request.html_url }}">View Pull Request</a></strong></p>
-          
-          <hr>
-          <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
-          
-    - name: 📧 Send PR Merged Email
-      if: github.event.action == 'closed' && github.event.pull_request.merged == true
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "✅ Pull Request Merged: ${{ github.event.pull_request.title }}"
-        to: ${{ secrets.NOTIFICATION_EMAIL }}
-        from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
-        html_body: |
-          <h2>✅ Pull Request Merged Successfully</h2>
-          
-          <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
-          <p><strong>Title:</strong> ${{ github.event.pull_request.title }}</p>
-          <p><strong>Author:</strong> ${{ github.event.pull_request.user.login }}</p>
-          <p><strong>Merged by:</strong> ${{ github.event.pull_request.merged_by.login }}</p>
-          <p><strong>Branch:</strong> ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}</p>
-          
-          <h3>📊 Final Stats:</h3>
-          <ul>
-            <li>📁 Files changed: ${{ github.event.pull_request.changed_files }}</li>
-            <li>➕ Lines added: ${{ github.event.pull_request.additions }}</li>
-            <li>➖ Lines removed: ${{ github.event.pull_request.deletions }}</li>
-            <li>💬 Comments: ${{ github.event.pull_request.comments }}</li>
-          </ul>
-          
-          <p><strong>🔗 <a href="${{ github.event.pull_request.html_url }}">View Merged PR</a></strong></p>
-          
-          <hr>
-          <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
-          
-    - name: 📧 Send PR Review Email
-      if: github.event_name == 'pull_request_review'
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "📝 PR Review: ${{ github.event.pull_request.title }}"
-        to: ${{ secrets.NOTIFICATION_EMAIL }}
-        from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
-        html_body: |
-          <h2>📝 Pull Request Review Submitted</h2>
-          
-          <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
-          <p><strong>PR Title:</strong> ${{ github.event.pull_request.title }}</p>
-          <p><strong>Reviewer:</strong> ${{ github.event.review.user.login }}</p>
-          <p><strong>Review State:</strong> ${{ github.event.review.state }}</p>
-          
-          <h3>💬 Review Comment:</h3>
-          <div style="background-color: #f6f8fa; padding: 10px; border-radius: 5px;">
-            ${{ github.event.review.body }}
-          </div>
-          
-          <p><strong>🔗 <a href="${{ github.event.review.html_url }}">View Review</a></strong></p>
-          
-          <hr>
-          <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📧 Send PR Opened Email
+        if: github.event.action == 'opened'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "🚀 New Pull Request: ${{ github.event.pull_request.title }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
+          html_body: |
+            <h2>🚀 New Pull Request Opened</h2>
+
+            <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
+            <p><strong>Title:</strong> ${{ github.event.pull_request.title }}</p>
+            <p><strong>Author:</strong> ${{ github.event.pull_request.user.login }}</p>
+            <p><strong>Branch:</strong> ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}</p>
+
+            <h3>📋 Description:</h3>
+            <div style="background-color: #f6f8fa; padding: 10px; border-radius: 5px;">
+              ${{ github.event.pull_request.body }}
+            </div>
+
+            <h3>📊 Changes:</h3>
+            <ul>
+              <li>✅ Files changed: ${{ github.event.pull_request.changed_files }}</li>
+              <li>➕ Additions: ${{ github.event.pull_request.additions }}</li>
+              <li>➖ Deletions: ${{ github.event.pull_request.deletions }}</li>
+            </ul>
+
+            <p><strong>🔗 <a href="${{ github.event.pull_request.html_url }}">View Pull Request</a></strong></p>
+
+            <hr>
+            <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
+
+      - name: 📧 Send PR Merged Email
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Pull Request Merged: ${{ github.event.pull_request.title }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
+          html_body: |
+            <h2>✅ Pull Request Merged Successfully</h2>
+
+            <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
+            <p><strong>Title:</strong> ${{ github.event.pull_request.title }}</p>
+            <p><strong>Author:</strong> ${{ github.event.pull_request.user.login }}</p>
+            <p><strong>Merged by:</strong> ${{ github.event.pull_request.merged_by.login }}</p>
+            <p><strong>Branch:</strong> ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}</p>
+
+            <h3>📊 Final Stats:</h3>
+            <ul>
+              <li>📁 Files changed: ${{ github.event.pull_request.changed_files }}</li>
+              <li>➕ Lines added: ${{ github.event.pull_request.additions }}</li>
+              <li>➖ Lines removed: ${{ github.event.pull_request.deletions }}</li>
+              <li>💬 Comments: ${{ github.event.pull_request.comments }}</li>
+            </ul>
+
+            <p><strong>🔗 <a href="${{ github.event.pull_request.html_url }}">View Merged PR</a></strong></p>
+
+            <hr>
+            <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
+
+      - name: 📧 Send PR Review Email
+        if: github.event_name == 'pull_request_review'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "📝 PR Review: ${{ github.event.pull_request.title }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: Smart Business AI Assistant <${{ secrets.EMAIL_USERNAME }}>
+          html_body: |
+            <h2>📝 Pull Request Review Submitted</h2>
+
+            <p><strong>Project:</strong> ${{ env.PROJECT_NAME }}</p>
+            <p><strong>PR Title:</strong> ${{ github.event.pull_request.title }}</p>
+            <p><strong>Reviewer:</strong> ${{ github.event.review.user.login }}</p>
+            <p><strong>Review State:</strong> ${{ github.event.review.state }}</p>
+
+            <h3>💬 Review Comment:</h3>
+            <div style="background-color: #f6f8fa; padding: 10px; border-radius: 5px;">
+              ${{ github.event.review.body }}
+            </div>
+
+            <p><strong>🔗 <a href="${{ github.event.review.html_url }}">View Review</a></strong></p>
+
+            <hr>
+            <p><small>Smart Business AI Assistant - Automated Notification System</small></p>
 
   # 💬 Slack Notifications (Alternative)
   notify-slack:
     name: 💬 Send Slack Notifications
     runs-on: ubuntu-latest
-    if: false  # Set to true if you want Slack notifications instead/additionally
-    
+    if: false # Set to true if you want Slack notifications instead/additionally
+
     steps:
-    - name: 💬 Send Slack Message
-      uses: 8398a7/action-slack@v3
-      with:
-        status: custom
-        custom_payload: |
-          {
-            "text": "🚀 New Pull Request in Smart Business AI Assistant",
-            "attachments": [
-              {
-                "color": "good",
-                "fields": [
-                  {
-                    "title": "Title",
-                    "value": "${{ github.event.pull_request.title }}",
-                    "short": false
-                  },
-                  {
-                    "title": "Author",
-                    "value": "${{ github.event.pull_request.user.login }}",
-                    "short": true
-                  },
-                  {
-                    "title": "Branch",
-                    "value": "${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}",
-                    "short": true
-                  }
-                ],
-                "actions": [
-                  {
-                    "type": "button",
-                    "text": "View PR",
-                    "url": "${{ github.event.pull_request.html_url }}"
-                  }
-                ]
-              }
-            ]
-          }
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: 💬 Send Slack Message
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚀 New Pull Request in Smart Business AI Assistant",
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Title",
+                      "value": "${{ github.event.pull_request.title }}",
+                      "short": false
+                    },
+                    {
+                      "title": "Author",
+                      "value": "${{ github.event.pull_request.user.login }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}",
+                      "short": true
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "button",
+                      "text": "View PR",
+                      "url": "${{ github.event.pull_request.html_url }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   # 📱 Discord Notifications (Alternative)
   notify-discord:
     name: 📱 Send Discord Notifications
     runs-on: ubuntu-latest
-    if: false  # Set to true if you want Discord notifications instead/additionally
-    
+    if: false # Set to true if you want Discord notifications instead/additionally
+
     steps:
-    - name: 📱 Send Discord Message
-      uses: Ilshidur/action-discord@master
-      with:
-        args: |
-          🚀 **New Pull Request** in Smart Business AI Assistant
-          
-          **Title:** ${{ github.event.pull_request.title }}
-          **Author:** ${{ github.event.pull_request.user.login }}
-          **Branch:** ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
-          
-          **View PR:** ${{ github.event.pull_request.html_url }}
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - name: 📱 Send Discord Message
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🚀 **New Pull Request** in Smart Business AI Assistant
+
+            **Title:** ${{ github.event.pull_request.title }}
+            **Author:** ${{ github.event.pull_request.user.login }}
+            **Branch:** ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
+
+            **View PR:** ${{ github.event.pull_request.html_url }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
