@@ -1,0 +1,277 @@
+name: Auto-Promotion Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Deployment Pipeline"]
+    types:
+      - completed
+    branches:
+      - dev
+  schedule:
+    # Run daily at 2 AM UTC to check for pending promotions
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      force-promotion:
+        description: "Force promotion from dev to main"
+        required: false
+        default: false
+        type: boolean
+      source-branch:
+        description: "Source branch for promotion"
+        required: true
+        default: "dev"
+        type: string
+      target-branch:
+        description: "Target branch for promotion"
+        required: true
+        default: "main"
+        type: string
+
+env:
+  NODE_VERSION: "18.x"
+  PROJECT_NAME: "Smart Business AI Assistant"
+
+jobs:
+  # Check Promotion Prerequisites
+  check-promotion-requirements:
+    name: Check Promotion Requirements
+    runs-on: ubuntu-latest
+    outputs:
+      should-promote: ${{ steps.promotion-check.outputs.should-promote }}
+      source-branch: ${{ steps.promotion-check.outputs.source-branch }}
+      target-branch: ${{ steps.promotion-check.outputs.target-branch }}
+      promotion-reason: ${{ steps.promotion-check.outputs.promotion-reason }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check promotion requirements
+        id: promotion-check
+        run: |
+          # Set default values
+          SOURCE_BRANCH="dev"
+          TARGET_BRANCH="main"
+          SHOULD_PROMOTE="false"
+          PROMOTION_REASON=""
+
+          # Handle different trigger types
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            if [ "${{ github.event.workflow_run.conclusion }}" = "success" ] && [ "${{ github.event.workflow_run.head_branch }}" = "dev" ]; then
+              SHOULD_PROMOTE="true"
+              PROMOTION_REASON="Successful dev deployment"
+            fi
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.force-promotion }}" = "true" ]; then
+              SOURCE_BRANCH="${{ github.event.inputs.source-branch }}"
+              TARGET_BRANCH="${{ github.event.inputs.target-branch }}"
+              SHOULD_PROMOTE="true"
+              PROMOTION_REASON="Manual force promotion"
+            fi
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            # Check if dev is ahead of main and all checks pass
+            git fetch origin dev:dev
+            git fetch origin main:main
+            
+            COMMITS_AHEAD=$(git rev-list --count main..dev)
+            if [ "$COMMITS_AHEAD" -gt 0 ]; then
+              SHOULD_PROMOTE="true"
+              PROMOTION_REASON="Scheduled promotion - dev is $COMMITS_AHEAD commits ahead"
+            fi
+          fi
+
+          echo "should-promote=$SHOULD_PROMOTE" >> $GITHUB_OUTPUT
+          echo "source-branch=$SOURCE_BRANCH" >> $GITHUB_OUTPUT
+          echo "target-branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+          echo "promotion-reason=$PROMOTION_REASON" >> $GITHUB_OUTPUT
+
+          echo "Promotion check results:"
+          echo "- Should promote: $SHOULD_PROMOTE"
+          echo "- Source branch: $SOURCE_BRANCH"
+          echo "- Target branch: $TARGET_BRANCH"
+          echo "- Reason: $PROMOTION_REASON"
+
+  # Verify Source Branch Quality
+  verify-source-quality:
+    name: Verify Source Branch Quality
+    runs-on: ubuntu-latest
+    needs: [check-promotion-requirements]
+    if: needs.check-promotion-requirements.outputs.should-promote == 'true'
+    outputs:
+      quality-passed: ${{ steps.quality-check.outputs.quality-passed }}
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check-promotion-requirements.outputs.source-branch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quick quality checks
+        id: quality-check
+        run: |
+          echo "Running quick quality checks on ${{ needs.check-promotion-requirements.outputs.source-branch }}"
+
+          # Check if tests pass
+          echo "Checking tests..."
+          npm run test:ci --workspace=packages/backend || exit 1
+          npm run test:ci --workspace=packages/frontend || exit 1
+
+          # Check build
+          echo "Checking build..."
+          npm run build --workspace=packages/backend || exit 1
+          npm run build --workspace=packages/frontend || exit 1
+
+          # Security audit
+          echo "Running security audit..."
+          npm audit --audit-level=moderate || exit 1
+
+          echo "quality-passed=true" >> $GITHUB_OUTPUT
+          echo "✅ All quality checks passed"
+
+  # Execute Promotion
+  execute-promotion:
+    name: Execute Branch Promotion
+    runs-on: ubuntu-latest
+    needs: [check-promotion-requirements, verify-source-quality]
+    if: |
+      needs.check-promotion-requirements.outputs.should-promote == 'true' &&
+      needs.verify-source-quality.outputs.quality-passed == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Execute promotion
+        run: |
+          SOURCE_BRANCH="${{ needs.check-promotion-requirements.outputs.source-branch }}"
+          TARGET_BRANCH="${{ needs.check-promotion-requirements.outputs.target-branch }}"
+
+          echo "🚀 Starting promotion from $SOURCE_BRANCH to $TARGET_BRANCH"
+
+          # Fetch latest changes
+          git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+
+          # Switch to target branch
+          git checkout $TARGET_BRANCH
+
+          # Merge source branch
+          git merge $SOURCE_BRANCH --no-ff -m "🚀 Auto-promotion: Merge $SOURCE_BRANCH to $TARGET_BRANCH
+
+          Reason: ${{ needs.check-promotion-requirements.outputs.promotion-reason }}
+          Source SHA: $(git rev-parse $SOURCE_BRANCH)
+          Target SHA: $(git rev-parse $TARGET_BRANCH)
+          Promoted by: github-actions[bot]
+          Timestamp: $(date -u)"
+
+          # Push changes
+          git push origin $TARGET_BRANCH
+
+          echo "✅ Successfully promoted $SOURCE_BRANCH to $TARGET_BRANCH"
+
+      - name: Create promotion tag
+        run: |
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+          TAG_NAME="promotion/dev-to-main-$TIMESTAMP"
+
+          git tag -a "$TAG_NAME" -m "Auto-promotion from dev to main
+
+          Timestamp: $(date -u)
+          Reason: ${{ needs.check-promotion-requirements.outputs.promotion-reason }}
+          Source: ${{ needs.check-promotion-requirements.outputs.source-branch }}
+          Target: ${{ needs.check-promotion-requirements.outputs.target-branch }}"
+
+          git push origin "$TAG_NAME"
+          echo "✅ Created promotion tag: $TAG_NAME"
+
+  # Post-Promotion Verification
+  post-promotion-verification:
+    name: Post-Promotion Verification
+    runs-on: ubuntu-latest
+    needs: [check-promotion-requirements, execute-promotion]
+    if: needs.execute-promotion.result == 'success'
+    steps:
+      - name: Checkout promoted branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check-promotion-requirements.outputs.target-branch }}
+
+      - name: Verify promotion success
+        run: |
+          echo "🔍 Verifying promotion success"
+
+          SOURCE_BRANCH="${{ needs.check-promotion-requirements.outputs.source-branch }}"
+          TARGET_BRANCH="${{ needs.check-promotion-requirements.outputs.target-branch }}"
+
+          # Verify the branches are in sync
+          git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+
+          SOURCE_SHA=$(git rev-parse $SOURCE_BRANCH)
+          TARGET_SHA=$(git rev-parse $TARGET_BRANCH)
+
+          echo "Source SHA ($SOURCE_BRANCH): $SOURCE_SHA"
+          echo "Target SHA ($TARGET_BRANCH): $TARGET_SHA"
+
+          # Check if target branch contains all commits from source
+          if git merge-base --is-ancestor $SOURCE_BRANCH $TARGET_BRANCH; then
+            echo "✅ Promotion verified: $TARGET_BRANCH contains all commits from $SOURCE_BRANCH"
+          else
+            echo "❌ Promotion verification failed: $TARGET_BRANCH is missing commits from $SOURCE_BRANCH"
+            exit 1
+          fi
+
+  # Promotion Notifications
+  notify-promotion:
+    name: Promotion Notification
+    runs-on: ubuntu-latest
+    needs:
+      [
+        check-promotion-requirements,
+        execute-promotion,
+        post-promotion-verification,
+      ]
+    if: always() && needs.check-promotion-requirements.outputs.should-promote == 'true'
+    steps:
+      - name: Notify promotion status
+        run: |
+          SOURCE="${{ needs.check-promotion-requirements.outputs.source-branch }}"
+          TARGET="${{ needs.check-promotion-requirements.outputs.target-branch }}"
+          REASON="${{ needs.check-promotion-requirements.outputs.promotion-reason }}"
+
+          if [ "${{ needs.execute-promotion.result }}" = "success" ] && [ "${{ needs.post-promotion-verification.result }}" = "success" ]; then
+            echo "✅ PROMOTION SUCCESSFUL"
+            echo "Successfully promoted $SOURCE to $TARGET"
+            echo "Reason: $REASON"
+            echo "Timestamp: $(date -u)"
+          elif [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
+            echo "❌ PROMOTION FAILED"
+            echo "Failed to promote $SOURCE to $TARGET"
+            echo "Reason: $REASON"
+            echo "Check logs for details"
+          elif [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
+            echo "⚠️ PROMOTION VERIFICATION FAILED"
+            echo "Promotion completed but verification failed"
+            echo "Manual intervention may be required"
+          else
+            echo "❌ PROMOTION ABORTED"
+            echo "Promotion was aborted due to failed prerequisites"
+          fi

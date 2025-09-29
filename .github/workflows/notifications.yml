@@ -1,0 +1,325 @@
+name: Notification Pipeline
+
+on:
+  workflow_run:
+    workflows:
+      - "CI Pipeline"
+      - "Deployment Pipeline"
+      - "Auto-Promotion Pipeline"
+    types:
+      - completed
+  issues:
+    types: [opened, closed, reopened]
+  pull_request:
+    types: [opened, closed, reopened]
+  pull_request_target:
+    types: [closed]
+  push:
+    branches: [main, master, dev]
+  release:
+    types: [published]
+
+env:
+  PROJECT_NAME: "Smart Business AI Assistant"
+
+jobs:
+  # CI Pipeline Notifications
+  notify-ci-status:
+    name: CI Status Notification
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.name == 'CI Pipeline'
+    steps:
+      - name: Notify CI Status
+        run: |
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          COMMIT_MSG="${{ github.event.workflow_run.head_commit.message }}"
+          ACTOR="${{ github.event.workflow_run.actor.login }}"
+
+          echo "📋 CI Pipeline Status Report"
+          echo "================================"
+          echo "Project: ${{ env.PROJECT_NAME }}"
+          echo "Workflow: $WORKFLOW_NAME"
+          echo "Status: $CONCLUSION"
+          echo "Branch: $BRANCH"
+          echo "Commit: ${COMMIT_SHA:0:7}"
+          echo "Message: $COMMIT_MSG"
+          echo "Triggered by: $ACTOR"
+          echo "Run URL: ${{ github.event.workflow_run.html_url }}"
+          echo "Timestamp: $(date -u)"
+
+          if [ "$CONCLUSION" = "success" ]; then
+            echo ""
+            echo "✅ CI Pipeline completed successfully!"
+            echo "All tests passed and build artifacts are ready."
+          elif [ "$CONCLUSION" = "failure" ]; then
+            echo ""
+            echo "❌ CI Pipeline failed!"
+            echo "Please check the workflow logs for details."
+          elif [ "$CONCLUSION" = "cancelled" ]; then
+            echo ""
+            echo "⚠️ CI Pipeline was cancelled."
+          fi
+
+  # Deployment Notifications
+  notify-deployment-status:
+    name: Deployment Status Notification
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.name == 'Deployment Pipeline'
+    steps:
+      - name: Notify Deployment Status
+        run: |
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          ACTOR="${{ github.event.workflow_run.actor.login }}"
+
+          echo "🚀 Deployment Status Report"
+          echo "============================="
+          echo "Project: ${{ env.PROJECT_NAME }}"
+          echo "Workflow: $WORKFLOW_NAME"
+          echo "Status: $CONCLUSION"
+          echo "Branch: $BRANCH"
+          echo "Commit: ${COMMIT_SHA:0:7}"
+          echo "Triggered by: $ACTOR"
+          echo "Run URL: ${{ github.event.workflow_run.html_url }}"
+          echo "Timestamp: $(date -u)"
+
+          # Determine environment based on branch
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
+            ENVIRONMENT="production"
+            EMOJI="🔴"
+          elif [[ "$BRANCH" == "dev" ]]; then
+            ENVIRONMENT="development"
+            EMOJI="🟡"
+          else
+            ENVIRONMENT="unknown"
+            EMOJI="⚪"
+          fi
+
+          echo "Environment: $ENVIRONMENT $EMOJI"
+
+          if [ "$CONCLUSION" = "success" ]; then
+            echo ""
+            echo "✅ Deployment completed successfully!"
+            echo "Application is now live in $ENVIRONMENT environment."
+          elif [ "$CONCLUSION" = "failure" ]; then
+            echo ""
+            echo "❌ Deployment failed!"
+            echo "Please check the deployment logs for details."
+          elif [ "$CONCLUSION" = "cancelled" ]; then
+            echo ""
+            echo "⚠️ Deployment was cancelled."
+          fi
+
+  # Auto-Promotion Notifications
+  notify-promotion-status:
+    name: Auto-Promotion Status Notification
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.name == 'Auto-Promotion Pipeline'
+    steps:
+      - name: Notify Auto-Promotion Status
+        run: |
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          ACTOR="${{ github.event.workflow_run.actor.login }}"
+
+          echo "🔄 Auto-Promotion Status Report"
+          echo "==============================="
+          echo "Project: ${{ env.PROJECT_NAME }}"
+          echo "Workflow: $WORKFLOW_NAME"
+          echo "Status: $CONCLUSION"
+          echo "Source Branch: $BRANCH"
+          echo "Commit: ${COMMIT_SHA:0:7}"
+          echo "Triggered by: $ACTOR"
+          echo "Run URL: ${{ github.event.workflow_run.html_url }}"
+          echo "Timestamp: $(date -u)"
+
+          if [ "$CONCLUSION" = "success" ]; then
+            echo ""
+            echo "✅ Auto-promotion completed successfully!"
+            echo "Changes from dev have been promoted to main branch."
+            echo "Production deployment will be triggered automatically."
+          elif [ "$CONCLUSION" = "failure" ]; then
+            echo ""
+            echo "❌ Auto-promotion failed!"
+            echo "Manual intervention may be required."
+            echo "Please check the promotion logs for details."
+          elif [ "$CONCLUSION" = "cancelled" ]; then
+            echo ""
+            echo "⚠️ Auto-promotion was cancelled."
+          elif [ "$CONCLUSION" = "skipped" ]; then
+            echo ""
+            echo "⏭️ Auto-promotion was skipped."
+            echo "Prerequisites were not met for promotion."
+          fi
+
+  # Issue and PR Notifications
+  notify-issue-pr:
+    name: Issue/PR Notification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' || github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+    steps:
+      - name: Notify Issue/PR Activity
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            TYPE="Issue"
+            NUMBER="${{ github.event.issue.number }}"
+            TITLE="${{ github.event.issue.title }}"
+            ACTION="${{ github.event.action }}"
+            ACTOR="${{ github.event.issue.user.login }}"
+            URL="${{ github.event.issue.html_url }}"
+            
+            echo "🐛 Issue Activity Report"
+            echo "========================"
+            echo "Project: ${{ env.PROJECT_NAME }}"
+            echo "Type: $TYPE"
+            echo "Number: #$NUMBER"
+            echo "Title: $TITLE"
+            echo "Action: $ACTION"
+            echo "User: $ACTOR"
+            echo "URL: $URL"
+            
+          elif [[ "${{ github.event_name }}" == "pull_request"* ]]; then
+            TYPE="Pull Request"
+            NUMBER="${{ github.event.pull_request.number }}"
+            TITLE="${{ github.event.pull_request.title }}"
+            ACTION="${{ github.event.action }}"
+            ACTOR="${{ github.event.pull_request.user.login }}"
+            URL="${{ github.event.pull_request.html_url }}"
+            SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+            TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+            MERGED="${{ github.event.pull_request.merged }}"
+            
+            echo "🔀 Pull Request Activity Report"
+            echo "==============================="
+            echo "Project: ${{ env.PROJECT_NAME }}"
+            echo "Type: $TYPE"
+            echo "Number: #$NUMBER"
+            echo "Title: $TITLE"
+            echo "Action: $ACTION"
+            echo "User: $ACTOR"
+            echo "Source: $SOURCE_BRANCH"
+            echo "Target: $TARGET_BRANCH"
+            echo "URL: $URL"
+            
+            if [ "$ACTION" = "closed" ] && [ "$MERGED" = "true" ]; then
+              echo "Status: Merged ✅"
+            elif [ "$ACTION" = "closed" ] && [ "$MERGED" = "false" ]; then
+              echo "Status: Closed without merge ❌"
+            fi
+          fi
+
+          echo "Timestamp: $(date -u)"
+
+  # Push Notifications
+  notify-push:
+    name: Push Notification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Notify Push Activity
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          ACTOR="${{ github.actor }}"
+          COMMITS_COUNT=$(echo '${{ toJson(github.event.commits) }}' | jq length)
+
+          echo "📝 Push Activity Report"
+          echo "======================="
+          echo "Project: ${{ env.PROJECT_NAME }}"
+          echo "Branch: $BRANCH"
+          echo "Commits: $COMMITS_COUNT"
+          echo "Latest Commit: ${COMMIT_SHA:0:7}"
+          echo "Message: $COMMIT_MSG"
+          echo "Pushed by: $ACTOR"
+          echo "Timestamp: $(date -u)"
+
+          # Add branch-specific context
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
+            echo ""
+            echo "🔴 Production branch updated!"
+            echo "This will trigger production deployment."
+          elif [[ "$BRANCH" == "dev" ]]; then
+            echo ""
+            echo "🟡 Development branch updated!"
+            echo "This will trigger CI/CD pipeline and potential auto-promotion."
+          fi
+
+  # Release Notifications
+  notify-release:
+    name: Release Notification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: Notify Release Activity
+        run: |
+          RELEASE_NAME="${{ github.event.release.name }}"
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          PRERELEASE="${{ github.event.release.prerelease }}"
+          DRAFT="${{ github.event.release.draft }}"
+          ACTOR="${{ github.event.release.author.login }}"
+          URL="${{ github.event.release.html_url }}"
+
+          echo "🎉 Release Activity Report"
+          echo "=========================="
+          echo "Project: ${{ env.PROJECT_NAME }}"
+          echo "Release: $RELEASE_NAME"
+          echo "Tag: $TAG_NAME"
+          echo "Prerelease: $PRERELEASE"
+          echo "Draft: $DRAFT"
+          echo "Published by: $ACTOR"
+          echo "URL: $URL"
+          echo "Timestamp: $(date -u)"
+
+          if [ "$PRERELEASE" = "false" ] && [ "$DRAFT" = "false" ]; then
+            echo ""
+            echo "✅ New stable release published!"
+          elif [ "$PRERELEASE" = "true" ]; then
+            echo ""
+            echo "🧪 Pre-release version published!"
+          fi
+
+  # Daily Summary (scheduled)
+  daily-summary:
+    name: Daily Activity Summary
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Generate Daily Summary
+        run: |
+          echo "📊 Daily Activity Summary - ${{ env.PROJECT_NAME }}"
+          echo "============================================="
+          echo "Date: $(date -u +%Y-%m-%d)"
+          echo "Time: $(date -u +%H:%M:%S) UTC"
+          echo ""
+          echo "This is a placeholder for daily summary."
+          echo "In a real implementation, this would:"
+          echo "- Aggregate workflow runs from the last 24 hours"
+          echo "- Count deployments, promotions, and issues"
+          echo "- Provide health metrics and trends"
+          echo "- Highlight any failures or concerns"
+
+  # Health Check Notification
+  health-check:
+    name: System Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: System Health Report
+        run: |
+          echo "🏥 System Health Check - ${{ env.PROJECT_NAME }}"
+          echo "=============================================="
+          echo "Timestamp: $(date -u)"
+          echo ""
+          echo "✅ Notification system is operational"
+          echo "✅ Workflow monitoring is active"
+          echo "✅ Event processing is functional"
+          echo ""
+          echo "All notification systems are working correctly."

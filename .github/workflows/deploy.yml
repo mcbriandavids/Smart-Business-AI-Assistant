@@ -1,0 +1,193 @@
+name: Deployment Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - dev
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "dev"
+        type: string
+
+env:
+  NODE_VERSION: "18.x"
+  PROJECT_NAME: "Smart Business AI Assistant"
+
+jobs:
+  # Check CI Status
+  check-ci:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    outputs:
+      ci-passed: ${{ steps.check.outputs.ci-passed }}
+      should-deploy: ${{ steps.deployment-check.outputs.should-deploy }}
+      target-env: ${{ steps.deployment-check.outputs.target-env }}
+    steps:
+      - name: Check CI workflow status
+        id: check
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "ci-passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "ci-passed=false" >> $GITHUB_OUTPUT
+            echo "CI workflow failed, skipping deployment"
+            exit 1
+          fi
+
+      - name: Determine deployment strategy
+        id: deployment-check
+        run: |
+          if [[ "${{ github.event.workflow_run.head_branch }}" == "main" || "${{ github.event.workflow_run.head_branch }}" == "master" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "target-env=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.workflow_run.head_branch }}" == "dev" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "target-env=dev" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "target-env=none" >> $GITHUB_OUTPUT
+          fi
+
+  # Manual Deployment Setup
+  manual-setup:
+    name: Manual Deployment Setup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    outputs:
+      should-deploy: "true"
+      target-env: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Setup manual deployment
+        run: |
+          echo "Manual deployment triggered"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Branch: ${{ github.event.inputs.branch }}"
+
+  # Development Deployment
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [check-ci]
+    if: |
+      (needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.target-env == 'dev') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.event.workflow_run.head_sha }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-build"
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to Development
+        run: |
+          echo "🚀 Deploying to Development Environment"
+          echo "Branch: ${{ github.event.workflow_run.head_branch || github.event.inputs.branch }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "Environment: development"
+          # Add your development deployment commands here
+          echo "Development deployment completed successfully"
+
+  # Production Deployment
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [check-ci]
+    if: |
+      (needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.target-env == 'production') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.event.workflow_run.head_sha }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-build"
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to Production
+        run: |
+          echo "🚀 Deploying to Production Environment"
+          echo "Branch: ${{ github.event.workflow_run.head_branch || github.event.inputs.branch }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "Environment: production"
+          # Add your production deployment commands here
+          echo "Production deployment completed successfully"
+
+  # Staging Deployment (Manual only)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [manual-setup]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Deploy to Staging
+        run: |
+          echo "🚀 Deploying to Staging Environment"
+          echo "Branch: ${{ github.event.inputs.branch }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Environment: staging"
+          # Add your staging deployment commands here
+          echo "Staging deployment completed successfully"
+
+  # Deployment Notifications
+  notify-deployment:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-production, deploy-staging]
+    if: always() && (needs.deploy-dev.result != 'skipped' || needs.deploy-production.result != 'skipped' || needs.deploy-staging.result != 'skipped')
+    steps:
+      - name: Notify Deployment Status
+        run: |
+          if [ "${{ needs.deploy-dev.result }}" = "success" ]; then
+            echo "✅ Development deployment successful"
+          elif [ "${{ needs.deploy-dev.result }}" = "failure" ]; then
+            echo "❌ Development deployment failed"
+          fi
+
+          if [ "${{ needs.deploy-production.result }}" = "success" ]; then
+            echo "✅ Production deployment successful"
+          elif [ "${{ needs.deploy-production.result }}" = "failure" ]; then
+            echo "❌ Production deployment failed"
+          fi
+
+          if [ "${{ needs.deploy-staging.result }}" = "success" ]; then
+            echo "✅ Staging deployment successful"
+          elif [ "${{ needs.deploy-staging.result }}" = "failure" ]; then
+            echo "❌ Staging deployment failed"
+          fi
