@@ -2,7 +2,7 @@ name: 📦 Automated Release
 
 on:
   push:
-    branches: [master, dev]
+    branches: [master, develop]
     paths:
       - "package.json"
       - "packages/*/package.json"
@@ -23,7 +23,7 @@ jobs:
   release:
     name: 🏷️ Create Release
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -71,15 +71,15 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 🏷️ Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          release_name: 🚀 Smart Business AI Assistant v${{ steps.version.outputs.version }}
+          name: 🚀 Smart Business AI Assistant v${{ steps.version.outputs.version }}
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # 📦 Build Release Assets
   build-assets:

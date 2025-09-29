@@ -3,7 +3,7 @@ name: 📧 Pull Request Notifications
 on:
   pull_request:
     types: [opened, closed, synchronize, reopened]
-    branches: [main, dev]
+    branches: [master, develop]
   pull_request_review:
     types: [submitted]
 

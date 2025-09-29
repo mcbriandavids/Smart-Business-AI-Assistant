@@ -58,10 +58,10 @@ jobs:
             - [ ] Update package-lock.json files
 
             ### 🛠️ Update Process:
-            1. Create feature branch from dev
+            1. Create feature branch from develop
             2. Update dependencies with \`npm update\`
             3. Run tests to ensure compatibility
-            4. Create PR to dev branch
+            4. Create PR to develop branch
             5. Merge after review
 
             ### 🔒 Security:
