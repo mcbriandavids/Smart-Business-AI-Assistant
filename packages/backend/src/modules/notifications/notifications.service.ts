@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { NotificationService } from './services/notification.service';
-import { SmartNotificationService } from './smart-notification.service';
-import { NotificationSchedulerService } from './notification-scheduler.service';
-import { MultiLanguageService } from './multi-language.service';
-import { 
-  NotificationType, 
-  NotificationChannel, 
+import { Injectable, Logger } from "@nestjs/common";
+import { NotificationService } from "./services/notification.service";
+import { SmartNotificationService } from "./smart-notification.service";
+import { NotificationSchedulerService } from "./notification-scheduler.service";
+import { MultiLanguageService } from "./multi-language.service";
+import {
+  NotificationType,
+  NotificationChannel,
   NotificationPriority,
   Language,
-  Notification 
-} from './notification.entity';
+  Notification,
+} from "./notification.entity";
 
 export interface CreateNotificationDto {
   customerId: string;
@@ -44,7 +44,7 @@ export class NotificationsService {
     private readonly notificationService: NotificationService,
     private readonly smartNotificationService: SmartNotificationService,
     private readonly schedulerService: NotificationSchedulerService,
-    private readonly multiLanguageService: MultiLanguageService,
+    private readonly multiLanguageService: MultiLanguageService
   ) {}
 
   async createNotification(dto: CreateNotificationDto): Promise<Notification> {
@@ -56,14 +56,16 @@ export class NotificationsService {
       const translated = await this.multiLanguageService.translateNotification(
         dto.templateKey,
         dto.language || Language.ENGLISH,
-        dto.variables,
+        dto.variables
       );
       title = translated.title;
       message = translated.message;
     }
 
     if (!title || !message) {
-      throw new Error('Title and message are required when not using a template');
+      throw new Error(
+        "Title and message are required when not using a template"
+      );
     }
 
     return await this.notificationService.createNotification({
@@ -85,9 +87,12 @@ export class NotificationsService {
 
   async getCustomerNotifications(
     customerId: string,
-    limit = 50,
+    limit = 50
   ): Promise<Notification[]> {
-    return await this.notificationService.getCustomerNotifications(customerId, limit);
+    return await this.notificationService.getCustomerNotifications(
+      customerId,
+      limit
+    );
   }
 
   async getUnreadCount(customerId: string): Promise<number> {
@@ -106,9 +111,9 @@ export class NotificationsService {
   async createProductAlert(
     customerId: string,
     productId: string,
-    alertType: 'restock' | 'price_drop' | 'back_in_stock' | 'low_stock',
+    alertType: "restock" | "price_drop" | "back_in_stock" | "low_stock",
     threshold?: number,
-    targetPrice?: number,
+    targetPrice?: number
   ): Promise<void> {
     await this.smartNotificationService.createProductAvailabilityAlert({
       customerId,
@@ -122,12 +127,12 @@ export class NotificationsService {
   async createFlashSaleAlert(
     productIds: string[],
     discount: number,
-    expiresAt: Date,
+    expiresAt: Date
   ): Promise<void> {
     await this.smartNotificationService.createFlashSaleAlert(
       productIds,
       discount,
-      expiresAt,
+      expiresAt
     );
   }
 
@@ -135,35 +140,35 @@ export class NotificationsService {
     customerId: string,
     orderId: string,
     status: string,
-    deliveryInfo?: any,
+    deliveryInfo?: any
   ): Promise<void> {
     await this.smartNotificationService.createOrderStatusUpdate(
       customerId,
       orderId,
       status,
-      deliveryInfo,
+      deliveryInfo
     );
   }
 
   async createPersonalizedRecommendation(
     customerId: string,
-    recommendations: any[],
+    recommendations: any[]
   ): Promise<void> {
     await this.smartNotificationService.createPersonalizedRecommendation(
       customerId,
-      recommendations,
+      recommendations
     );
   }
 
   async createLoyaltyReward(
     customerId: string,
     rewardType: string,
-    value: number,
+    value: number
   ): Promise<void> {
     await this.smartNotificationService.createLoyaltyReward(
       customerId,
       rewardType,
-      value,
+      value
     );
   }
 
@@ -175,7 +180,7 @@ export class NotificationsService {
     title: string,
     message: string,
     scheduledFor: Date,
-    metadata?: any,
+    metadata?: any
   ): Promise<string> {
     return await this.schedulerService.scheduleNotification(
       customerId,
@@ -184,12 +189,14 @@ export class NotificationsService {
       title,
       message,
       scheduledFor,
-      metadata,
+      metadata
     );
   }
 
   async cancelScheduledNotification(notificationId: string): Promise<boolean> {
-    return await this.schedulerService.cancelScheduledNotification(notificationId);
+    return await this.schedulerService.cancelScheduledNotification(
+      notificationId
+    );
   }
 
   // Analytics and stats
@@ -235,12 +242,12 @@ export class NotificationsService {
   async translateMessage(
     templateKey: string,
     language: Language,
-    variables?: Record<string, any>,
+    variables?: Record<string, any>
   ): Promise<{ title: string; message: string }> {
     const result = await this.multiLanguageService.translateNotification(
       templateKey,
       language,
-      variables,
+      variables
     );
     return {
       title: result.title,

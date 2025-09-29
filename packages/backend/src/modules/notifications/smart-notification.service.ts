@@ -1,16 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { NotificationService } from './services/notification.service';
-import { 
-  NotificationType, 
-  NotificationChannel, 
+import { Injectable, Logger } from "@nestjs/common";
+import { NotificationService } from "./services/notification.service";
+import {
+  NotificationType,
+  NotificationChannel,
   NotificationPriority,
-  Language 
-} from './notification.entity';
+  Language,
+} from "./notification.entity";
 
 export interface ProductAlert {
   productId: string;
   customerId: string;
-  alertType: 'restock' | 'price_drop' | 'back_in_stock' | 'low_stock';
+  alertType: "restock" | "price_drop" | "back_in_stock" | "low_stock";
   threshold?: number;
   targetPrice?: number;
 }
@@ -21,7 +21,7 @@ export interface SmartNotificationConfig {
   preferredLanguage: Language;
   timezone: string;
   quietHours: { start: string; end: string };
-  frequency: 'immediate' | 'hourly' | 'daily' | 'weekly';
+  frequency: "immediate" | "hourly" | "daily" | "weekly";
   interests: string[];
 }
 
@@ -29,38 +29,36 @@ export interface SmartNotificationConfig {
 export class SmartNotificationService {
   private readonly logger = new Logger(SmartNotificationService.name);
 
-  constructor(
-    private readonly notificationService: NotificationService,
-  ) {}
+  constructor(private readonly notificationService: NotificationService) {}
 
   async createProductAvailabilityAlert(alert: ProductAlert): Promise<void> {
     const { customerId, productId, alertType } = alert;
-    
+
     // Get customer preferences (mock for now)
     const config = await this.getCustomerConfig(customerId);
-    
+
     let title: string;
     let message: string;
     let type: NotificationType;
 
     switch (alertType) {
-      case 'restock':
-        title = 'Product Back in Stock!';
+      case "restock":
+        title = "Product Back in Stock!";
         message = `Great news! The product you wanted is now available.`;
         type = NotificationType.RESTOCK_ALERT;
         break;
-      case 'price_drop':
-        title = 'Price Drop Alert!';
+      case "price_drop":
+        title = "Price Drop Alert!";
         message = `The price has dropped on a product you\'re watching.`;
         type = NotificationType.PRICE_DROP;
         break;
-      case 'back_in_stock':
-        title = 'Back in Stock!';
+      case "back_in_stock":
+        title = "Back in Stock!";
         message = `A product from your wishlist is back in stock.`;
         type = NotificationType.PRODUCT_AVAILABLE;
         break;
-      case 'low_stock':
-        title = 'Limited Stock Alert!';
+      case "low_stock":
+        title = "Limited Stock Alert!";
         message = `Hurry! Only a few items left in stock.`;
         type = NotificationType.LIMITED_STOCK;
         break;
@@ -88,11 +86,11 @@ export class SmartNotificationService {
 
   async createPersonalizedRecommendation(
     customerId: string,
-    recommendations: any[],
+    recommendations: any[]
   ): Promise<void> {
     const config = await this.getCustomerConfig(customerId);
-    
-    const title = 'Personalized Recommendations';
+
+    const title = "Personalized Recommendations";
     const message = `We found ${recommendations.length} products you might love!`;
 
     for (const channel of config.preferredChannels) {
@@ -118,7 +116,7 @@ export class SmartNotificationService {
   async createFlashSaleAlert(
     productIds: string[],
     discount: number,
-    expiresAt: Date,
+    expiresAt: Date
   ): Promise<void> {
     // This would typically query customers interested in these products
     const interestedCustomers = await this.getInterestedCustomers(productIds);
@@ -128,7 +126,7 @@ export class SmartNotificationService {
 
     for (const customerId of interestedCustomers) {
       const config = await this.getCustomerConfig(customerId);
-      
+
       for (const channel of config.preferredChannels) {
         await this.notificationService.createNotification({
           customerId,
@@ -142,7 +140,7 @@ export class SmartNotificationService {
             productIds,
             discount,
             expiresAt: expiresAt.toISOString(),
-            actionUrl: '/flash-sale',
+            actionUrl: "/flash-sale",
           },
         });
       }
@@ -153,32 +151,32 @@ export class SmartNotificationService {
     customerId: string,
     orderId: string,
     status: string,
-    deliveryInfo?: any,
+    deliveryInfo?: any
   ): Promise<void> {
     const config = await this.getCustomerConfig(customerId);
-    
+
     let title: string;
     let message: string;
     let type: NotificationType;
 
     switch (status) {
-      case 'confirmed':
-        title = 'Order Confirmed';
-        message = 'Your order has been confirmed and is being processed.';
+      case "confirmed":
+        title = "Order Confirmed";
+        message = "Your order has been confirmed and is being processed.";
         type = NotificationType.ORDER_CONFIRMATION;
         break;
-      case 'shipped':
-        title = 'Order Shipped';
-        message = 'Your order is on its way! Track your package for updates.';
+      case "shipped":
+        title = "Order Shipped";
+        message = "Your order is on its way! Track your package for updates.";
         type = NotificationType.DELIVERY_UPDATE;
         break;
-      case 'delivered':
-        title = 'Order Delivered';
-        message = 'Your order has been delivered. Enjoy your purchase!';
+      case "delivered":
+        title = "Order Delivered";
+        message = "Your order has been delivered. Enjoy your purchase!";
         type = NotificationType.DELIVERY_UPDATE;
         break;
       default:
-        title = 'Order Update';
+        title = "Order Update";
         message = `Your order status has been updated to: ${status}`;
         type = NotificationType.DELIVERY_UPDATE;
     }
@@ -204,11 +202,11 @@ export class SmartNotificationService {
   async createLoyaltyReward(
     customerId: string,
     rewardType: string,
-    value: number,
+    value: number
   ): Promise<void> {
     const config = await this.getCustomerConfig(customerId);
-    
-    const title = 'Loyalty Reward Earned!';
+
+    const title = "Loyalty Reward Earned!";
     const message = `Congratulations! You've earned a ${rewardType} worth ${value} points.`;
 
     for (const channel of config.preferredChannels) {
@@ -231,36 +229,40 @@ export class SmartNotificationService {
 
   private getPriorityForAlert(alertType: string): NotificationPriority {
     switch (alertType) {
-      case 'low_stock':
+      case "low_stock":
         return NotificationPriority.HIGH;
-      case 'price_drop':
+      case "price_drop":
         return NotificationPriority.MEDIUM;
-      case 'restock':
-      case 'back_in_stock':
+      case "restock":
+      case "back_in_stock":
         return NotificationPriority.MEDIUM;
       default:
         return NotificationPriority.LOW;
     }
   }
 
-  private async getCustomerConfig(customerId: string): Promise<SmartNotificationConfig> {
+  private async getCustomerConfig(
+    customerId: string
+  ): Promise<SmartNotificationConfig> {
     // Mock implementation - would fetch from database
     return {
       customerId,
       preferredChannels: [NotificationChannel.EMAIL, NotificationChannel.SMS],
       preferredLanguage: Language.ENGLISH,
-      timezone: 'UTC',
-      quietHours: { start: '22:00', end: '08:00' },
-      frequency: 'immediate',
-      interests: ['electronics', 'fashion', 'home'],
+      timezone: "UTC",
+      quietHours: { start: "22:00", end: "08:00" },
+      frequency: "immediate",
+      interests: ["electronics", "fashion", "home"],
     };
   }
 
-  private async getInterestedCustomers(productIds: string[]): Promise<string[]> {
+  private async getInterestedCustomers(
+    productIds: string[]
+  ): Promise<string[]> {
     // Mock implementation - would query database for customers who:
     // - Have these products in wishlist
     // - Have purchased similar products
     // - Have shown interest in these categories
-    return ['customer-1', 'customer-2', 'customer-3'];
+    return ["customer-1", "customer-2", "customer-3"];
   }
 }

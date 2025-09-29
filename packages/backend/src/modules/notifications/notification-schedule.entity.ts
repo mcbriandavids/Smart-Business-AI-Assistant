@@ -1,56 +1,67 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { NotificationChannel, NotificationType, Language, NotificationPriority } from './notification.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import {
+  NotificationChannel,
+  NotificationType,
+  Language,
+  NotificationPriority,
+} from "./notification.entity";
 
 export enum ScheduleType {
-  ONE_TIME = 'one_time',
-  RECURRING = 'recurring',
-  CONDITIONAL = 'conditional',
+  ONE_TIME = "one_time",
+  RECURRING = "recurring",
+  CONDITIONAL = "conditional",
 }
 
 export enum RecurrencePattern {
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  CUSTOM = 'custom',
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  CUSTOM = "custom",
 }
 
-@Entity('notification_schedules')
+@Entity("notification_schedules")
 export class NotificationSchedule {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
   name: string;
 
-  @Column('text', { nullable: true })
+  @Column("text", { nullable: true })
   description?: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: ScheduleType,
   })
   scheduleType: ScheduleType;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: NotificationType,
   })
   notificationType: NotificationType;
 
   @Column({
-    type: 'json',
+    type: "json",
   })
   channels: NotificationChannel[];
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: NotificationPriority,
     default: NotificationPriority.MEDIUM,
   })
   priority: NotificationPriority;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: Language,
     default: Language.ENGLISH,
   })
@@ -59,16 +70,16 @@ export class NotificationSchedule {
   @Column()
   title: string;
 
-  @Column('text')
+  @Column("text")
   message: string;
 
   // For one-time schedules
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   scheduledFor?: Date;
 
   // For recurring schedules
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: RecurrencePattern,
     nullable: true,
   })
@@ -77,14 +88,14 @@ export class NotificationSchedule {
   @Column({ nullable: true })
   cronExpression?: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   startDate?: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   endDate?: Date;
 
   // For conditional schedules
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: "json", nullable: true })
   conditions?: {
     productAvailable?: string[];
     priceDropThreshold?: number;
@@ -98,7 +109,7 @@ export class NotificationSchedule {
   };
 
   // Target audience
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: "json", nullable: true })
   targetCustomers?: {
     customerIds?: string[];
     segments?: string[];
@@ -110,7 +121,7 @@ export class NotificationSchedule {
     };
   };
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: "json", nullable: true })
   metadata?: Record<string, any>;
 
   @Column({ default: true })
@@ -119,10 +130,10 @@ export class NotificationSchedule {
   @Column({ default: 0 })
   executionCount: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   lastExecutedAt?: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   nextExecutionAt?: Date;
 
   @CreateDateColumn()
