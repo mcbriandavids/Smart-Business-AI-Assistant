@@ -1,0 +1,408 @@
+name: Smart Business AI - Unified Pipeline
+
+on:
+  push:
+    branches: 
+      - dev
+      - main
+      - master
+      - "feature/**"
+      - "bugfix/**"
+      - "hotfix/**"
+  pull_request:
+    branches: 
+      - dev
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  NODE_VERSION: "18.x"
+  PROJECT_NAME: "Smart Business AI Assistant"
+
+jobs:
+  # Stage 1: Setup and Dependencies
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.deployment-check.outputs.should-deploy }}
+      target-env: ${{ steps.deployment-check.outputs.target-env }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Determine deployment strategy
+        id: deployment-check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "target-env=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "target-env=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "target-env=dev" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "target-env=none" >> $GITHUB_OUTPUT
+          fi
+
+  # Stage 2: Code Quality and Testing
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run backend tests
+        run: npm run test:backend
+
+      - name: Generate backend test coverage
+        run: |
+          cd packages/backend
+          npm run test:cov || echo "Coverage not available"
+
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run frontend tests
+        run: npm run test:frontend
+
+      - name: Generate frontend test coverage
+        run: |
+          cd packages/frontend
+          npm run test:coverage || echo "Coverage not available"
+
+  # Stage 3: Build Verification
+  build-backend:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Build backend
+        run: npm run build:backend
+
+      - name: Upload backend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: packages/backend/dist/
+          retention-days: 1
+
+  build-frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: packages/frontend/.next/
+          retention-days: 1
+
+  # Stage 4: Security and Code Quality
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: setup
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run security audit
+        run: |
+          echo "Running security audit..."
+          npm audit --audit-level moderate || echo "Moderate vulnerabilities found"
+          
+      - name: Check for high severity vulnerabilities
+        run: |
+          echo "Checking for high severity vulnerabilities..."
+          npm audit --audit-level high || echo "High severity vulnerabilities found"
+
+  lint-check:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    needs: setup
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run install:all
+
+      - name: Run backend linting
+        run: |
+          cd packages/backend
+          npm run lint || echo "Backend linting issues found"
+
+      - name: Run frontend linting
+        run: |
+          cd packages/frontend
+          npm run lint || echo "Frontend linting issues found"
+
+  # Stage 5: Quality Gate
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, build-backend, build-frontend, security-audit]
+    if: always()
+    outputs:
+      passed: ${{ steps.evaluate.outputs.passed }}
+    steps:
+      - name: Evaluate Quality Gate
+        id: evaluate
+        run: |
+          echo "=== Quality Gate Evaluation ==="
+          echo "Backend Tests: ${{ needs.test-backend.result }}"
+          echo "Frontend Tests: ${{ needs.test-frontend.result }}"
+          echo "Backend Build: ${{ needs.build-backend.result }}"
+          echo "Frontend Build: ${{ needs.build-frontend.result }}"
+          echo "Security Audit: ${{ needs.security-audit.result }}"
+
+          # Required jobs must pass
+          if [ "${{ needs.test-backend.result }}" = "success" ] &&
+             [ "${{ needs.test-frontend.result }}" = "success" ] &&
+             [ "${{ needs.build-backend.result }}" = "success" ] &&
+             [ "${{ needs.build-frontend.result }}" = "success" ]; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "✅ Quality Gate PASSED - All critical checks successful"
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Quality Gate FAILED - Critical checks failed"
+            exit 1
+          fi
+
+  # Stage 6: Development Deployment
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [setup, quality-gate]
+    if: |
+      needs.quality-gate.outputs.passed == 'true' && 
+      needs.setup.outputs.should-deploy == 'true' && 
+      needs.setup.outputs.target-env == 'dev'
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-build"
+          merge-multiple: true
+
+      - name: Deploy to Development Environment
+        run: |
+          echo "🚀 Deploying to Development Environment"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Environment: development"
+          # Add your development deployment commands here
+          # For example: docker build, push to dev registry, update dev k8s, etc.
+
+  # Stage 7: Production Deployment  
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [setup, quality-gate]
+    if: |
+      needs.quality-gate.outputs.passed == 'true' && 
+      needs.setup.outputs.should-deploy == 'true' && 
+      needs.setup.outputs.target-env == 'production'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-build"
+          merge-multiple: true
+
+      - name: Deploy to Production Environment
+        run: |
+          echo "🚀 Deploying to Production Environment"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Environment: production"
+          # Add your production deployment commands here
+          # For example: docker build, push to prod registry, update prod k8s, etc.
+
+  # Stage 8: Auto-promotion (Dev to Main)
+  promote-to-main:
+    name: Auto-promote Dev to Main
+    runs-on: ubuntu-latest
+    needs: [setup, quality-gate, deploy-dev]
+    if: |
+      github.ref == 'refs/heads/dev' && 
+      github.event_name == 'push' && 
+      needs.quality-gate.outputs.passed == 'true' &&
+      needs.deploy-dev.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Promote dev to main
+        run: |
+          echo "🔄 Auto-promoting dev branch to main..."
+          git checkout main || git checkout -b main
+          git merge dev --no-ff -m "chore: Auto-promote dev to main after successful deployment [skip ci]"
+          git push origin main
+          echo "✅ Successfully promoted dev to main"
+
+  # Stage 9: Notifications
+  notify-success:
+    name: Success Notification
+    runs-on: ubuntu-latest
+    needs: [quality-gate, setup]
+    if: needs.quality-gate.outputs.passed == 'true'
+    steps:
+      - name: Success Notification
+        run: |
+          echo "🎉 SUCCESS: ${{ env.PROJECT_NAME }} Pipeline Completed Successfully!"
+          echo "📋 Summary:"
+          echo "  • Branch: ${{ github.ref_name }}"
+          echo "  • Commit: ${{ github.sha }}"
+          echo "  • Author: ${{ github.actor }}"
+          echo "  • Event: ${{ github.event_name }}"
+          echo "  • Target Environment: ${{ needs.setup.outputs.target-env }}"
+          echo "  • Deployment: ${{ needs.setup.outputs.should-deploy }}"
+
+  notify-failure:
+    name: Failure Notification
+    runs-on: ubuntu-latest
+    needs: [quality-gate]
+    if: failure() || needs.quality-gate.outputs.passed == 'false'
+    steps:
+      - name: Failure Notification
+        run: |
+          echo "💥 FAILURE: ${{ env.PROJECT_NAME }} Pipeline Failed!"
+          echo "📋 Details:"
+          echo "  • Branch: ${{ github.ref_name }}"
+          echo "  • Commit: ${{ github.sha }}"
+          echo "  • Author: ${{ github.actor }}"
+          echo "  • Event: ${{ github.event_name }}"
+          echo "  • Check the logs above for detailed error information"
+          echo "  • Fix the issues and push again to retry"
