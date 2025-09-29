@@ -1,0 +1,80 @@
+name: 🔄 Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  # 🔍 Check for Updates
+  dependency-updates:
+    name: 🔍 Check Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+
+      - name: 🔍 Check for Outdated Dependencies
+        run: |
+          echo "🔍 Checking backend dependencies..."
+          cd packages/backend
+          npm outdated || true
+          cd ../frontend
+          echo "🔍 Checking frontend dependencies..."
+          npm outdated || true
+
+      - name: 🔒 Security Audit
+        run: |
+          echo "🔒 Running security audit..."
+          cd packages/backend && npm audit --audit-level=high || true
+          cd ../frontend && npm audit --audit-level=high || true
+
+      - name: 📝 Create Issue for Updates
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔄 Weekly Dependency Update Check';
+            const body = `
+            ## 🔍 Weekly Dependency Update Report
+
+            This is an automated check for dependency updates in the Smart Business AI Assistant project.
+
+            ### 📋 Actions Needed:
+            - [ ] Review outdated dependencies in backend
+            - [ ] Review outdated dependencies in frontend  
+            - [ ] Check for security vulnerabilities
+            - [ ] Create feature branch for updates: \`feature/dependency-updates-${new Date().toISOString().split('T')[0]}\`
+            - [ ] Test updated dependencies
+            - [ ] Update package.json files
+            - [ ] Update package-lock.json files
+
+            ### 🛠️ Update Process:
+            1. Create feature branch from dev
+            2. Update dependencies with \`npm update\`
+            3. Run tests to ensure compatibility
+            4. Create PR to dev branch
+            5. Merge after review
+
+            ### 🔒 Security:
+            Check the security audit output above for any vulnerabilities that need immediate attention.
+
+            ---
+            *This issue was created automatically by GitHub Actions*
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['dependencies', 'maintenance', 'automated']
+            });

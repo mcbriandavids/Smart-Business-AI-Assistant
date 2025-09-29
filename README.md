@@ -320,7 +320,26 @@ This AI Business Agent provides:
 - 🔐 **Privacy Compliance**: Respect customer communication preferences
 - 🔐 **Local Storage**: Data stays on your server (SQLite database)
 
-## 📞 Support & Help
+## � Email Notifications Setup
+
+Get instant email alerts for all repository activities! Perfect for staying informed about:
+
+- **📥 New Pull Requests** - When team members submit code
+- **✅ Build Success** - When your code compiles and tests pass  
+- **❌ Build Failures** - When something needs your attention
+- **🔄 Weekly Updates** - Dependency and security checks
+
+### 🚀 Quick Setup
+
+1. **Create Gmail App Password** (5 minutes)
+2. **Add 3 GitHub Secrets** (2 minutes)  
+3. **Test with a PR** - You'll get instant notifications! 📧
+
+📚 **Complete Guide**: See [EMAIL_NOTIFICATIONS_SETUP.md](./EMAIL_NOTIFICATIONS_SETUP.md) for detailed step-by-step instructions.
+
+🎯 **Pro Tip**: Set up a dedicated email address like `notifications@yourbusiness.com` for clean organization!
+
+## �📞 Support & Help
 
 ### Getting Started Help
 

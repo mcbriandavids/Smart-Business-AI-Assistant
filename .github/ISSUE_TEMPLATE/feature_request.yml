@@ -1,0 +1,135 @@
+name: ✨ Feature Request
+description: Suggest a new feature for the Smart Business AI Assistant
+title: "[FEATURE] "
+labels: ["feature-request", "enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature for Smart Business AI Assistant! 🌟
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 🎯 Feature Summary
+      description: A brief, clear description of the feature you'd like to see.
+      placeholder: Describe the feature in one sentence...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 Problem Statement
+      description: What problem does this feature solve? What pain point does it address?
+      placeholder: |
+        As a [user type], I want [goal] so that [benefit].
+
+        Currently, users experience [problem] because [reason].
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe your proposed solution in detail.
+      placeholder: |
+        I would like to see...
+
+        This feature would work by...
+
+        The user experience would be...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 🏗️ Feature Category
+      description: Which area of the application would this feature enhance?
+      options:
+        - AI & Machine Learning
+        - Customer Management
+        - Product & Inventory Management
+        - Notifications & Communication
+        - Analytics & Reporting
+        - User Interface & Experience
+        - Performance & Optimization
+        - Security & Authentication
+        - Integration & APIs
+        - Mobile & Accessibility
+        - Developer Experience
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⚡ Priority Level
+      description: How important is this feature to you?
+      options:
+        - Must Have (Critical for business)
+        - Should Have (Important improvement)
+        - Could Have (Nice to have)
+        - Won't Have (Future consideration)
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: |
+        Alternative 1: [Description]
+        Alternative 2: [Description]
+
+        Current workaround: [If any]
+
+  - type: textarea
+    id: business_value
+    attributes:
+      label: 💼 Business Value
+      description: What business value would this feature provide?
+      placeholder: |
+        This feature would:
+        - Increase efficiency by...
+        - Reduce costs by...
+        - Improve customer satisfaction by...
+        - Enable new business opportunities by...
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What specific requirements must be met for this feature to be considered complete?
+      placeholder: |
+        Given [context]
+        When [action]
+        Then [expected outcome]
+
+        - [ ] Requirement 1
+        - [ ] Requirement 2
+        - [ ] Requirement 3
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups/Screenshots
+      description: If you have mockups, wireframes, or reference screenshots, please include them.
+      placeholder: Paste images or links to mockups here...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 Additional Context
+      description: Any other information that would help in implementing this feature.
+      placeholder: |
+        Technical considerations:
+        Dependencies:
+        References:
+        Examples from other applications:

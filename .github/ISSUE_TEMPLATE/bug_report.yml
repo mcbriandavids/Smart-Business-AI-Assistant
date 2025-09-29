@@ -1,0 +1,111 @@
+name: 🐛 Bug Report
+description: Create a bug report to help us improve the Smart Business AI Assistant
+title: "[BUG] "
+labels: ["bug", "needs-investigation"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report for Smart Business AI Assistant! 🚀
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'  
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: A clear description of what you expected to happen.
+      placeholder: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: A clear description of what actually happened.
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🏗️ Component Affected
+      description: Which part of the application is affected?
+      options:
+        - Backend API
+        - Frontend UI
+        - Customer Management
+        - Product Management
+        - Notifications (SMS/WhatsApp/Email)
+        - AI Chat System
+        - Analytics Dashboard
+        - Delivery Coordination
+        - Authentication/Authorization
+        - Database/Data Layer
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severity Level
+      description: How severe is this bug?
+      options:
+        - Critical (App crashes, data loss)
+        - High (Major feature broken)
+        - Medium (Feature partially works)
+        - Low (Minor issue, workaround exists)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment
+      description: Tell us about your environment
+      placeholder: |
+        - OS: [e.g. Windows 11, macOS 13, Ubuntu 20.04]
+        - Browser: [e.g. Chrome 118, Firefox 119]
+        - Node.js version: [e.g. 18.17.0]
+        - Smart Business AI Assistant version: [e.g. Genesis v1.0.0]
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots/Logs
+      description: If applicable, add screenshots or error logs
+      placeholder: Paste screenshots or error messages here...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about the problem here.
+      placeholder: Any additional information that might help...
