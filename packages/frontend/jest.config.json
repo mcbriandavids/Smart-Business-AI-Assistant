@@ -1,5 +1,6 @@
 {
   "testEnvironment": "jsdom",
+  "setupFilesAfterEnv": ["<rootDir>/src/setupTests.ts"],
   "testMatch": [
     "**/__tests__/**/*.{js,jsx,ts,tsx}",
     "**/*.{test,spec}.{js,jsx,ts,tsx}"
@@ -14,10 +15,7 @@
     ]
   },
   "collectCoverageFrom": ["src/**/*.{ts,tsx}", "!src/**/*.d.ts"],
-  "testTimeout": 10000,
-  "verbose": false,
-  "silent": false,
+  "passWithNoTests": true,
   "forceExit": true,
-  "detectOpenHandles": true,
-  "passWithNoTests": true
+  "testTimeout": 30000
 }

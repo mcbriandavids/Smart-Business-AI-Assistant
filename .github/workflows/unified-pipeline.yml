@@ -105,10 +105,17 @@ jobs:
         run: |
           npm install
           npm run install:all
-      - name: Run frontend tests
+      - name: Verify frontend dependencies
+        working-directory: packages/frontend
         run: |
-          echo "Running frontend tests..."
-          cd packages/frontend
+          echo "Checking frontend dependencies..."
+          npm list --depth=0
+      - name: Run frontend tests
+        working-directory: packages/frontend
+        run: |
+          echo "Starting frontend tests..."
+          export CI=true
+          export NODE_ENV=test
           npm run test:ci
         env:
           CI: true

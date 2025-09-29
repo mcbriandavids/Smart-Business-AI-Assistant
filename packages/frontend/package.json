@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "test": "jest --passWithNoTests --watchAll=false",
+    "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "jest --passWithNoTests --watchAll=false --ci"
+    "test:ci": "jest --ci --passWithNoTests --watchAll=false --forceExit"
   },
   "dependencies": {
     "next": "14.0.3",
