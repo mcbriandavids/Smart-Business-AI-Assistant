@@ -3,6 +3,8 @@ name: 🌿 Dev Branch Validation
 on:
   push:
     branches: [dev]
+  pull_request:
+    branches: [dev]
   workflow_dispatch:
 
 env:

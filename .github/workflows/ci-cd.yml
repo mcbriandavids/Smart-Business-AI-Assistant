@@ -2,9 +2,9 @@ name: 🚀 Smart Business AI - CI/CD Pipeline
 
 on:
   push:
-    branches: [master, dev, develop, "feature/**", "bugfix/**", "hotfix/**"]
+    branches: [dev, "feature/**", "bugfix/**", "hotfix/**"]
   pull_request:
-    branches: [master, dev]
+    branches: [dev]
 
 env:
   NODE_VERSION: "18.x"
@@ -444,3 +444,76 @@ jobs:
           echo "✅ Quality gate passed"
           echo ""
           echo "🚀 Ready for deployment!"
+
+  # 🚀 Promote to Production (Main Branch)
+  promote-to-main:
+    name: 🚀 Promote to Main for Production
+    runs-on: ubuntu-latest
+    needs: [quality-gate, deploy-dev]
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push' && needs.quality-gate.result == 'success'
+
+    steps:
+      - name: 📥 Checkout Dev Branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: 🚀 Create Production Release
+        run: |
+          echo "🚀 Promoting dev branch to main for production..."
+
+          # Create or switch to main branch
+          git checkout main 2>/dev/null || git checkout -b main
+
+          # Merge dev into main
+          git merge dev --no-ff -m "🚀 Production Release: Merge dev to main
+
+          ✅ All CI/CD checks passed:
+          - Backend tests: PASSED
+          - Frontend tests: PASSED  
+          - Security audit: PASSED
+          - Build verification: PASSED
+          - Quality gate: PASSED
+
+          🎯 Commit: ${{ github.sha }}
+          👤 Author: ${{ github.actor }}
+          ⏰ Deployed: $(date)
+          "
+
+          # Push to main branch
+          git push origin main
+
+      - name: 📋 Create Release Tag
+        run: |
+          # Create a release tag with timestamp
+          TAG_NAME="release-$(date +%Y%m%d-%H%M%S)"
+          git tag -a "$TAG_NAME" -m "🚀 Production Release $TAG_NAME
+
+          📦 Automated release from dev branch
+          🎯 Source commit: ${{ github.sha }}
+          👤 Author: ${{ github.actor }}
+          ✅ All quality gates passed"
+
+          git push origin "$TAG_NAME"
+          echo "🏷️ Created release tag: $TAG_NAME"
+
+      - name: 📧 Notify Production Deployment
+        run: |
+          echo "📧 Production deployment notification"
+          echo "====================================="
+          echo "🎉 SUCCESS: Dev branch promoted to main!"
+          echo "🚀 Production deployment ready"
+          echo "🌿 Source branch: dev"
+          echo "🎯 Target branch: main"
+          echo "👤 Author: ${{ github.actor }}"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "⏰ Promoted: $(date)"
+          echo ""
+          echo "🔗 Production deployment can now proceed from main branch"
