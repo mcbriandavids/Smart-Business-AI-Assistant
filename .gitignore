@@ -18,6 +18,19 @@ coverage/
 .vs
 *.bak
 *.tmp
+
+# Next.js build files and cache
+.next/
+.next/cache/
+.next/static/webpack/
+.next/server/
+.next/trace
+*.pack.gz
+*.pack.gz.old
+
+# Production builds
+build/
+out/
 *.old
 
 # Ignore local environment files
