@@ -1,4 +1,4 @@
-name: 🚀 Smart Business AI - CI/CD Pipeline
+name: Smart Business AI - CI/CD Pipeline
 
 on:
   push:
@@ -11,509 +11,204 @@ env:
   PROJECT_NAME: "Smart Business AI Assistant"
 
 jobs:
-  # 🔍 Setup and Dependencies
   setup:
-    name: 🔍 Setup & Cache Dependencies
+    name: Setup Environment
     runs-on: ubuntu-latest
     outputs:
-      backend-cache-hit: ${{ steps.cache-backend.outputs.cache-hit }}
-      frontend-cache-hit: ${{ steps.cache-frontend.outputs.cache-hit }}
-
+      cache-key: ${{ steps.cache-keys.outputs.cache-key }}
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-      - name: 🔍 Cache Backend Dependencies
-        id: cache-backend
-        uses: actions/cache@v3
-        with:
-          path: packages/backend/node_modules
-          key: backend-deps-${{ hashFiles('packages/backend/package-lock.json') }}
-          restore-keys: backend-deps-
-
-      - name: 🔍 Cache Frontend Dependencies
-        id: cache-frontend
-        uses: actions/cache@v3
-        with:
-          path: packages/frontend/node_modules
-          key: frontend-deps-${{ hashFiles('packages/frontend/package-lock.json') }}
-          restore-keys: frontend-deps-
-
-      - name: 📋 Install Backend Dependencies
-        if: steps.cache-backend.outputs.cache-hit != 'true'
+      - name: Generate cache keys
+        id: cache-keys
         run: |
-          cd packages/backend
-          npm ci || npm install
+          echo "cache-key=node-modules-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
 
-      - name: 📋 Install Frontend Dependencies
-        if: steps.cache-frontend.outputs.cache-hit != 'true'
-        run: |
-          cd packages/frontend
-          npm ci || npm install
+      - name: Install dependencies
+        run: npm ci
 
-  # 🧪 Backend Tests
   test-backend:
-    name: 🧪 Backend Tests & Lint
+    name: Test Backend
     runs-on: ubuntu-latest
     needs: setup
-
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-      - name: 🔍 Restore Backend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/backend/node_modules
-          key: backend-deps-${{ hashFiles('packages/backend/package-lock.json') }}
-          restore-keys: backend-deps-
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 📋 Install Dependencies (if cache miss)
-        run: |
-          cd packages/backend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
+      - name: Run backend tests
+        run: npm run test:backend
 
-      - name: 🔍 Lint Backend Code
-        run: |
-          cd packages/backend
-          npm run lint || echo "⚠️ Linting completed with warnings"
-
-      - name: 🧪 Run Backend Tests
-        run: |
-          cd packages/backend
-          npm run test || echo "⚠️ Some tests may need implementation"
-
-      - name: 📊 Generate Coverage Report
-        continue-on-error: true
-        run: |
-          cd packages/backend
-          npm run test:cov || echo "📊 Coverage report not available"
-
-  # 🧪 Frontend Tests
   test-frontend:
-    name: 🧪 Frontend Tests & Lint
+    name: Test Frontend
     runs-on: ubuntu-latest
     needs: setup
-
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-      - name: 🔍 Restore Frontend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/frontend/node_modules
-          key: frontend-deps-${{ hashFiles('packages/frontend/package-lock.json') }}
-          restore-keys: frontend-deps-
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 📋 Install Dependencies (if cache miss)
-        run: |
-          cd packages/frontend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
+      - name: Run frontend tests
+        run: npm run test:frontend
 
-      - name: 🔍 Lint Frontend Code
-        run: |
-          cd packages/frontend
-          npm run lint || echo "⚠️ Linting completed with warnings"
-
-      - name: 🔍 TypeScript Type Check
-        run: |
-          cd packages/frontend
-          npm run type-check || echo "⚠️ Type checking completed with warnings"
-
-      - name: 🧪 Run Frontend Tests
-        continue-on-error: true
-        run: |
-          cd packages/frontend
-          # Next.js doesn't include tests by default, so we'll skip if not configured
-          if grep -q '"test"' package.json; then
-            npm test
-          else
-            echo "✅ Frontend tests not configured - skipping"
-          fi
-
-  # 🏗️ Build Backend
   build-backend:
-    name: 🏗️ Build Backend
-    runs-on: ubuntu-latest
-    needs: [setup, test-backend]
-
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 🔍 Restore Backend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/backend/node_modules
-          key: backend-deps-${{ hashFiles('packages/backend/package-lock.json') }}
-          restore-keys: backend-deps-
-
-      - name: 📋 Install Dependencies (if cache miss)
-        run: |
-          cd packages/backend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
-
-      - name: 🏗️ Build Backend Application
-        run: |
-          cd packages/backend
-          npm run build
-
-      - name: 📦 Upload Backend Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-build
-          path: packages/backend/dist/
-          retention-days: 7
-
-  # 🏗️ Build Frontend
-  build-frontend:
-    name: 🏗️ Build Frontend
-    runs-on: ubuntu-latest
-    needs: [setup, test-frontend]
-
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 🔍 Restore Frontend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/frontend/node_modules
-          key: frontend-deps-${{ hashFiles('packages/frontend/package-lock.json') }}
-          restore-keys: frontend-deps-
-
-      - name: 📋 Install Dependencies (if cache miss)
-        run: |
-          cd packages/frontend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
-
-      - name: 🏗️ Build Frontend Application
-        run: |
-          cd packages/frontend
-          npm run build
-
-      - name: 📦 Upload Frontend Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-build
-          path: |
-            packages/frontend/.next/
-            packages/frontend/out/
-          retention-days: 7
-
-  # 🔒 Security Audit
-  security:
-    name: 🔒 Security Audit
+    name: Build Backend
     runs-on: ubuntu-latest
     needs: setup
-
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-      - name: 🔍 Restore Backend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/backend/node_modules
-          key: backend-deps-${{ hashFiles('packages/backend/package-lock.json') }}
-          restore-keys: backend-deps-
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 🔍 Restore Frontend Dependencies
-        uses: actions/cache@v3
-        with:
-          path: packages/frontend/node_modules
-          key: frontend-deps-${{ hashFiles('packages/frontend/package-lock.json') }}
-          restore-keys: frontend-deps-
+      - name: Build backend
+        run: npm run build:backend
 
-      - name: 📋 Install Dependencies
-        run: |
-          cd packages/backend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
-          cd ../frontend
-          if [ ! -d "node_modules" ]; then
-            npm ci || npm install
-          fi
-
-      - name: 🔒 Security Audit - Backend
-        continue-on-error: true
-        run: |
-          cd packages/backend
-          npm audit --audit-level=moderate || echo "⚠️ Security audit found issues - review recommended"
-
-      - name: 🔒 Security Audit - Frontend
-        continue-on-error: true
-        run: |
-          cd packages/frontend
-          npm audit --audit-level=moderate || echo "⚠️ Security audit found issues - review recommended"
-
-      - name: 🔍 Secret Detection
-        run: |
-          echo "🔍 Scanning for hardcoded secrets..."
-
-          # Check for common secret patterns
-          if grep -r -E "(password|secret|key|token|api_key)" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" packages/ | grep -v ".example" | grep -v "node_modules" | grep -v ".next"; then
-            echo "⚠️ WARNING: Potential secrets found in source code"
-            echo "🔍 Review the above matches to ensure no secrets are hardcoded"
-          else
-            echo "✅ No hardcoded secrets detected in source code"
-          fi
-
-          # Check for .env files in version control
-          if find . -name ".env" -not -path "./node_modules/*" -not -path "./.next/*" | grep -q .; then
-            echo "❌ ERROR: .env files found in version control!"
-            echo "🚨 Environment files should never be committed"
-            exit 1
-          else
-            echo "✅ No .env files found in version control"
-          fi
-
-          # Check for common private key patterns
-          if grep -r -E "(BEGIN.*PRIVATE.*KEY|BEGIN.*RSA.*PRIVATE.*KEY)" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.pem" --include="*.key" packages/ 2>/dev/null; then
-            echo "❌ ERROR: Private keys found in source code!"
-            exit 1
-          else
-            echo "✅ No private keys found in source code"
-          fi
-
-          echo "🔒 Secret detection completed"
-
-      - name: 🔐 Environment Variable Security Check
-        run: |
-          echo "🔐 Checking environment variable security..."
-
-          # Check .env.example for secure patterns
-          if [ -f "packages/backend/.env.example" ]; then
-            echo "📋 Validating .env.example file..."
-            
-            # Check for placeholder values
-            if grep -q "your_" packages/backend/.env.example; then
-              echo "✅ .env.example uses placeholder values"
-            else
-              echo "⚠️ WARNING: .env.example may contain real values"
-            fi
-            
-            # Check for secure JWT secret guidance
-            if grep -q "openssl rand" packages/backend/.env.example; then
-              echo "✅ JWT secret generation guidance provided"
-            else
-              echo "⚠️ Add JWT secret generation guidance"
-            fi
-          fi
-
-          echo "🔐 Environment security check completed"
-
-  # 🚀 Deploy Development
-  deploy-dev:
-    name: 🚀 Deploy to Development
+  build-frontend:
+    name: Build Frontend
     runs-on: ubuntu-latest
-    needs: [build-backend, build-frontend, security]
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-
+    needs: setup
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Download Backend Build
-        uses: actions/download-artifact@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: backend-build
-          path: ./backend-build
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
-      - name: 📦 Download Frontend Build
-        uses: actions/download-artifact@v3
-        with:
-          name: frontend-build
-          path: ./frontend-build
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 🚀 Deploy to Development Environment
-        run: |
-          echo "🚀 Deploying Smart Business AI Assistant to development..."
-          echo "📊 Backend build size: $(du -sh ./backend-build 2>/dev/null || echo 'N/A')"
-          echo "📊 Frontend build size: $(du -sh ./frontend-build 2>/dev/null || echo 'N/A')"
-          echo "✅ Development deployment simulation completed"
-          # Add actual deployment commands here when ready
+      - name: Build frontend
+        run: npm run build:frontend
 
-      - name: 📧 Notify Development Deployment
-        continue-on-error: true
-        run: |
-          echo "📧 Development deployment notification sent"
-          echo "🎯 Branch: ${{ github.ref_name }}"
-          echo "👤 Author: ${{ github.actor }}"
-          echo "📝 Commit: ${{ github.sha }}"
-
-  # 📊 Quality Gate
-  quality-gate:
-    name: 📊 Quality Gate
+  security:
+    name: Security Audit
     runs-on: ubuntu-latest
-    needs:
-      [test-backend, test-frontend, build-backend, build-frontend, security]
-    if: always()
-
+    needs: setup
     steps:
-      - name: 📊 Evaluate Quality Gate
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level moderate
+
+      - name: Check for high severity vulnerabilities
+        run: npm audit --audit-level high
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, build-backend, build-frontend, security]
+    if: always()
+    steps:
+      - name: Evaluate Quality Gate
         run: |
-          echo "📊 Quality Gate Evaluation"
-          echo "========================="
+          echo "Backend Tests: ${{ needs.test-backend.result }}"
+          echo "Frontend Tests: ${{ needs.test-frontend.result }}"
+          echo "Backend Build: ${{ needs.build-backend.result }}"
+          echo "Frontend Build: ${{ needs.build-frontend.result }}"
+          echo "Security Audit: ${{ needs.security.result }}"
 
-          # Check if all required jobs passed
-          backend_test="${{ needs.test-backend.result }}"
-          frontend_test="${{ needs.test-frontend.result }}"
-          backend_build="${{ needs.build-backend.result }}"
-          frontend_build="${{ needs.build-frontend.result }}"
-          security="${{ needs.security.result }}"
-
-          echo "🧪 Backend Tests: $backend_test"
-          echo "🧪 Frontend Tests: $frontend_test"
-          echo "🏗️ Backend Build: $backend_build"
-          echo "🏗️ Frontend Build: $frontend_build"
-          echo "🔒 Security Audit: $security"
-
-          # Pass if all critical jobs succeeded
-          if [[ "$backend_test" == "success" && "$frontend_test" == "success" && 
-                "$backend_build" == "success" && "$frontend_build" == "success" ]]; then
-            echo "✅ Quality Gate PASSED"
-            echo "🎉 All checks completed successfully!"
+          if [ "${{ needs.test-backend.result }}" = "success" ] &&
+             [ "${{ needs.test-frontend.result }}" = "success" ] &&
+             [ "${{ needs.build-backend.result }}" = "success" ] &&
+             [ "${{ needs.build-frontend.result }}" = "success" ] &&
+             [ "${{ needs.security.result }}" = "success" ]; then
+            echo "Quality Gate PASSED"
           else
-            echo "❌ Quality Gate FAILED"
-            echo "🔍 Please review failed checks above"
+            echo "Quality Gate FAILED"
             exit 1
           fi
 
-  # 🎉 Success Notification
-  notify-success:
-    name: 🎉 Success Notification
+  promote-to-main:
+    name: Promote to Main
     runs-on: ubuntu-latest
     needs: [quality-gate]
-    if: needs.quality-gate.result == 'success'
-
-    steps:
-      - name: 🎉 Workflow Success
-        run: |
-          echo "🎉 Smart Business AI Assistant - Workflow Completed Successfully!"
-          echo "================================================="
-          echo "📋 Project: ${{ env.PROJECT_NAME }}"
-          echo "🌿 Branch: ${{ github.ref_name }}"
-          echo "👤 Author: ${{ github.actor }}"
-          echo "📝 Commit: ${{ github.sha }}"
-          echo "⏰ Completed: $(date)"
-          echo ""
-          echo "✅ All tests passed"
-          echo "✅ All builds successful"
-          echo "✅ Security audit completed"
-          echo "✅ Quality gate passed"
-          echo ""
-          echo "🚀 Ready for deployment!"
-
-  # 🚀 Promote to Production (Main Branch)
-  promote-to-main:
-    name: 🚀 Promote to Main for Production
-    runs-on: ubuntu-latest
-    needs: [quality-gate, deploy-dev]
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push' && needs.quality-gate.result == 'success'
-
     steps:
-      - name: 📥 Checkout Dev Branch
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: dev
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔧 Configure Git
+      - name: Configure Git
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 🚀 Create Production Release
+      - name: Promote dev to main
         run: |
-          echo "🚀 Promoting dev branch to main for production..."
-
-          # Create or switch to main branch
-          git checkout main 2>/dev/null || git checkout -b main
-
-          # Merge dev into main
-          git merge dev --no-ff -m "🚀 Production Release: Merge dev to main
-
-          ✅ All CI/CD checks passed:
-          - Backend tests: PASSED
-          - Frontend tests: PASSED  
-          - Security audit: PASSED
-          - Build verification: PASSED
-          - Quality gate: PASSED
-
-          🎯 Commit: ${{ github.sha }}
-          👤 Author: ${{ github.actor }}
-          ⏰ Deployed: $(date)
-          "
-
-          # Push to main branch
+          git checkout main
+          git merge dev --no-ff -m "Auto-promote: Merge dev to main [skip ci]"
           git push origin main
 
-      - name: 📋 Create Release Tag
+  notify-failure:
+    name: Pipeline Failed
+    runs-on: ubuntu-latest
+    needs: [quality-gate]
+    if: failure()
+    steps:
+      - name: Log Failure
         run: |
-          # Create a release tag with timestamp
-          TAG_NAME="release-$(date +%Y%m%d-%H%M%S)"
-          git tag -a "$TAG_NAME" -m "🚀 Production Release $TAG_NAME
+          echo "CI/CD pipeline for ${{ env.PROJECT_NAME }} FAILED"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Check logs above for details."
 
-          📦 Automated release from dev branch
-          🎯 Source commit: ${{ github.sha }}
-          👤 Author: ${{ github.actor }}
-          ✅ All quality gates passed"
-
-          git push origin "$TAG_NAME"
-          echo "🏷️ Created release tag: $TAG_NAME"
-
-      - name: 📧 Notify Production Deployment
+  notify-success:
+    name: Pipeline Passed
+    runs-on: ubuntu-latest
+    needs: [quality-gate]
+    if: needs.quality-gate.result == 'success'
+    steps:
+      - name: Log Success
         run: |
-          echo "📧 Production deployment notification"
-          echo "====================================="
-          echo "🎉 SUCCESS: Dev branch promoted to main!"
-          echo "🚀 Production deployment ready"
-          echo "🌿 Source branch: dev"
-          echo "🎯 Target branch: main"
-          echo "👤 Author: ${{ github.actor }}"
-          echo "📝 Commit: ${{ github.sha }}"
-          echo "⏰ Promoted: $(date)"
-          echo ""
-          echo "🔗 Production deployment can now proceed from main branch"
+          echo "CI/CD pipeline for ${{ env.PROJECT_NAME }} PASSED"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Ready for deployment!"
