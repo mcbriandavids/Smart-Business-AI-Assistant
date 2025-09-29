@@ -154,33 +154,34 @@ export default function HomePage() {
             component="h1"
             gutterBottom
             fontWeight={700}
-            sx={{ 
+            sx={{
               background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              fontSize: { xs: "2rem", md: "3rem" }
+              fontSize: { xs: "2rem", md: "3rem" },
             }}
           >
             🤖 Smart Business AI Assistant
           </Typography>
-          <Typography 
-            variant="subtitle1" 
-            color="text.secondary" 
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
             mb={2}
             sx={{ fontSize: "1.1rem", fontWeight: 500 }}
           >
-            Genesis v1.0.0 - Intelligent customer notifications and business automation
+            Genesis v1.0.0 - Intelligent customer notifications and business
+            automation
           </Typography>
           <Chip
             label={loading ? "🔄 Loading..." : "🚀 System Ready"}
             color={loading ? "default" : "success"}
             size="medium"
-            sx={{ 
-              fontSize: "0.9rem", 
+            sx={{
+              fontSize: "0.9rem",
               py: 2.5,
               px: 3,
               borderRadius: 2,
-              fontWeight: 600
+              fontWeight: 600,
             }}
           />
         </Box>
@@ -188,14 +189,21 @@ export default function HomePage() {
         {/* Progress Overview */}
         <Grid container spacing={2} sx={{ mb: 4 }}>
           <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: 120, 
-              borderRadius: 2,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white"
-            }}>
+            <Card
+              sx={{
+                height: 120,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+              }}
+            >
               <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={1}
+                >
                   <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
                     Customer Base
                   </Typography>
@@ -207,26 +215,33 @@ export default function HomePage() {
                 <LinearProgress
                   variant="determinate"
                   value={customerProgress}
-                  sx={{ 
+                  sx={{
                     mt: 1,
                     bgcolor: "rgba(255,255,255,0.2)",
                     "& .MuiLinearProgress-bar": {
-                      bgcolor: "rgba(255,255,255,0.8)"
-                    }
+                      bgcolor: "rgba(255,255,255,0.8)",
+                    },
                   }}
                 />
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: 120, 
-              borderRadius: 2,
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-              color: "white"
-            }}>
+            <Card
+              sx={{
+                height: 120,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                color: "white",
+              }}
+            >
               <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={1}
+                >
                   <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
                     Product Catalog
                   </Typography>
@@ -238,12 +253,12 @@ export default function HomePage() {
                 <LinearProgress
                   variant="determinate"
                   value={productProgress}
-                  sx={{ 
+                  sx={{
                     mt: 1,
                     bgcolor: "rgba(255,255,255,0.2)",
                     "& .MuiLinearProgress-bar": {
-                      bgcolor: "rgba(255,255,255,0.8)"
-                    }
+                      bgcolor: "rgba(255,255,255,0.8)",
+                    },
                   }}
                 />
               </CardContent>
@@ -273,27 +288,29 @@ export default function HomePage() {
                 }}
                 onClick={feature.action}
               >
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  p: 2,
-                  "&:last-child": { pb: 2 }
-                }}>
+                <CardContent
+                  sx={{
+                    flexGrow: 1,
+                    p: 2,
+                    "&:last-child": { pb: 2 },
+                  }}
+                >
                   <Box display="flex" alignItems="center" mb={1.5}>
-                    <Box 
-                      color={`${feature.color}.main`} 
+                    <Box
+                      color={`${feature.color}.main`}
                       mr={1.5}
                       sx={{
                         display: "flex",
                         alignItems: "center",
                         "& .MuiSvgIcon-root": {
-                          fontSize: "1.5rem"
-                        }
+                          fontSize: "1.5rem",
+                        },
                       }}
                     >
                       {feature.icon}
                     </Box>
-                    <Typography 
-                      variant="subtitle1" 
+                    <Typography
+                      variant="subtitle1"
                       component="h3"
                       fontWeight={600}
                       sx={{ fontSize: "0.95rem" }}
@@ -301,17 +318,17 @@ export default function HomePage() {
                       {feature.title}
                     </Typography>
                   </Box>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
                     mb={1.5}
-                    sx={{ 
+                    sx={{
                       fontSize: "0.8rem",
                       lineHeight: 1.4,
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
-                      overflow: "hidden"
+                      overflow: "hidden",
                     }}
                   >
                     {feature.description}
@@ -321,14 +338,13 @@ export default function HomePage() {
                     color={feature.color}
                     size="small"
                     variant="filled"
-                    sx={{ 
+                    sx={{
                       height: 20,
                       fontSize: "0.7rem",
-                      fontWeight: 500
+                      fontWeight: 500,
                     }}
                   />
                 </CardContent>
-
               </Card>
             </Grid>
           ))}
@@ -337,9 +353,9 @@ export default function HomePage() {
         {/* Quick Actions */}
         <Card sx={{ mt: 4, borderRadius: 2, bgcolor: "grey.50" }}>
           <CardContent sx={{ textAlign: "center", py: 3 }}>
-            <Typography 
-              variant="h5" 
-              gutterBottom 
+            <Typography
+              variant="h5"
+              gutterBottom
               fontWeight={600}
               color="primary"
             >
@@ -355,26 +371,26 @@ export default function HomePage() {
                 startIcon={<PeopleIcon />}
                 onClick={() => setCustomerDialogOpen(true)}
                 sx={{ borderRadius: 2, px: 3 }}
-            >
-              Add First Customer
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<InventoryIcon />}
-              onClick={() => setProductDialogOpen(true)}
-            >
-              Add Products
-            </Button>
-            <Button
-              variant="outlined"
-              size="medium"
-              startIcon={<AIIcon />}
-              onClick={() => setAiChatOpen(true)}
-              sx={{ borderRadius: 2, px: 3 }}
-            >
-              Test AI Chat
-            </Button>
+              >
+                Add First Customer
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<InventoryIcon />}
+                onClick={() => setProductDialogOpen(true)}
+              >
+                Add Products
+              </Button>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<AIIcon />}
+                onClick={() => setAiChatOpen(true)}
+                sx={{ borderRadius: 2, px: 3 }}
+              >
+                Test AI Chat
+              </Button>
             </Box>
           </CardContent>
         </Card>
