@@ -234,7 +234,7 @@ jobs:
             <p><strong>Commit:</strong> ${{ github.sha }}</p>
             <p><strong>Author:</strong> ${{ github.actor }}</p>
             <p><strong>Timestamp:</strong> ${{ github.event.head_commit.timestamp }}</p>
-            
+
             <h3>🎯 Release Highlights:</h3>
             <ul>
               <li>✅ All tests passed</li>
@@ -242,7 +242,7 @@ jobs:
               <li>🏗️ Build successful</li>
               <li>🚀 Deployment completed</li>
             </ul>
-            
+
             <hr>
             <p><small>Automated CI/CD Pipeline - Smart Business AI Assistant</small></p>
 
