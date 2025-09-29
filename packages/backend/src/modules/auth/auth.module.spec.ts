@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthModule } from './auth.module';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AuthModule } from "./auth.module";
 
-describe('AuthModule', () => {
+describe("AuthModule", () => {
   let module: TestingModule;
 
   beforeEach(async () => {
@@ -14,11 +14,11 @@ describe('AuthModule', () => {
     await module.close();
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(module).toBeDefined();
   });
 
-  it('should compile successfully', () => {
+  it("should compile successfully", () => {
     expect(module).toBeInstanceOf(TestingModule);
   });
 });
