@@ -287,6 +287,62 @@ jobs:
           cd packages/frontend
           npm audit --audit-level=moderate || echo "⚠️ Security audit found issues - review recommended"
 
+      - name: 🔍 Secret Detection
+        run: |
+          echo "🔍 Scanning for hardcoded secrets..."
+
+          # Check for common secret patterns
+          if grep -r -E "(password|secret|key|token|api_key)" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" packages/ | grep -v ".example" | grep -v "node_modules" | grep -v ".next"; then
+            echo "⚠️ WARNING: Potential secrets found in source code"
+            echo "🔍 Review the above matches to ensure no secrets are hardcoded"
+          else
+            echo "✅ No hardcoded secrets detected in source code"
+          fi
+
+          # Check for .env files in version control
+          if find . -name ".env" -not -path "./node_modules/*" -not -path "./.next/*" | grep -q .; then
+            echo "❌ ERROR: .env files found in version control!"
+            echo "🚨 Environment files should never be committed"
+            exit 1
+          else
+            echo "✅ No .env files found in version control"
+          fi
+
+          # Check for common private key patterns
+          if grep -r -E "(BEGIN.*PRIVATE.*KEY|BEGIN.*RSA.*PRIVATE.*KEY)" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.pem" --include="*.key" packages/ 2>/dev/null; then
+            echo "❌ ERROR: Private keys found in source code!"
+            exit 1
+          else
+            echo "✅ No private keys found in source code"
+          fi
+
+          echo "🔒 Secret detection completed"
+
+      - name: 🔐 Environment Variable Security Check
+        run: |
+          echo "🔐 Checking environment variable security..."
+
+          # Check .env.example for secure patterns
+          if [ -f "packages/backend/.env.example" ]; then
+            echo "📋 Validating .env.example file..."
+            
+            # Check for placeholder values
+            if grep -q "your_" packages/backend/.env.example; then
+              echo "✅ .env.example uses placeholder values"
+            else
+              echo "⚠️ WARNING: .env.example may contain real values"
+            fi
+            
+            # Check for secure JWT secret guidance
+            if grep -q "openssl rand" packages/backend/.env.example; then
+              echo "✅ JWT secret generation guidance provided"
+            else
+              echo "⚠️ Add JWT secret generation guidance"
+            fi
+          fi
+
+          echo "🔐 Environment security check completed"
+
   # 🚀 Deploy Development
   deploy-dev:
     name: 🚀 Deploy to Development
