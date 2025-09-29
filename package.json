@@ -1,7 +1,7 @@
 {
   "name": "smart-business-ai-agent",
   "version": "1.0.0",
-  "description": "AI-powered customer notification and engagement system for retail business",
+  "description": "Smart Business AI Assistant - Genesis Release: AI-powered customer notification and engagement system for retail business",
   "private": true,
   "workspaces": [
     "packages/*"

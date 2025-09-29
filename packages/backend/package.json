@@ -1,7 +1,7 @@
 {
   "name": "@smart-business-ai/backend",
   "version": "1.0.0",
-  "description": "Backend API for Smart Business AI Agent",
+  "description": "Backend API for Smart Business AI Assistant - Genesis v1.0.0",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
