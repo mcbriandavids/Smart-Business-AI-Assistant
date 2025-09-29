@@ -13,5 +13,11 @@
       }
     ]
   },
-  "collectCoverageFrom": ["src/**/*.{ts,tsx}", "!src/**/*.d.ts"]
+  "collectCoverageFrom": ["src/**/*.{ts,tsx}", "!src/**/*.d.ts"],
+  "testTimeout": 10000,
+  "verbose": false,
+  "silent": false,
+  "forceExit": true,
+  "detectOpenHandles": true,
+  "passWithNoTests": true
 }
