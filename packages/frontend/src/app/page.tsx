@@ -146,132 +146,215 @@ export default function HomePage() {
 
   return (
     <>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
         {/* Header */}
-        <Box textAlign="center" mb={6}>
+        <Box textAlign="center" mb={4}>
           <Typography
-            variant="h2"
+            variant="h3"
             component="h1"
             gutterBottom
-            fontWeight="bold"
+            fontWeight={700}
+            sx={{ 
+              background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              fontSize: { xs: "2rem", md: "3rem" }
+            }}
           >
             🤖 Smart Business AI Assistant
           </Typography>
-          <Typography variant="h6" color="text.secondary" mb={2}>
-            Intelligent customer notifications and business automation for
-            modern retail
+          <Typography 
+            variant="subtitle1" 
+            color="text.secondary" 
+            mb={2}
+            sx={{ fontSize: "1.1rem", fontWeight: 500 }}
+          >
+            Genesis v1.0.0 - Intelligent customer notifications and business automation
           </Typography>
           <Chip
             label={loading ? "🔄 Loading..." : "🚀 System Ready"}
             color={loading ? "default" : "success"}
             size="medium"
-            sx={{ fontSize: "1rem", py: 2 }}
+            sx={{ 
+              fontSize: "0.9rem", 
+              py: 2.5,
+              px: 3,
+              borderRadius: 2,
+              fontWeight: 600
+            }}
           />
         </Box>
 
         {/* Progress Overview */}
-        <Card sx={{ mb: 4, bgcolor: "background.paper" }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              <TrendingUpIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-              Business Growth
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Customer Base: {customerProgress.toFixed(0)}%
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={customerProgress}
-                sx={{ mt: 1, mb: 2 }}
-              />
-
-              <Typography variant="body2" color="text.secondary">
-                Product Catalog: {productProgress.toFixed(0)}%
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={productProgress}
-                sx={{ mt: 1, mb: 2 }}
-              />
-
-              <Typography variant="body2" color="text.secondary">
-                AI Integration: 100%
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={100}
-                sx={{ mt: 1 }}
-              />
-            </Box>
-          </CardContent>
-        </Card>
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ 
+              height: 120, 
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white"
+            }}>
+              <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
+                    Customer Base
+                  </Typography>
+                  <PeopleIcon sx={{ opacity: 0.8 }} />
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {stats.customers}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={customerProgress}
+                  sx={{ 
+                    mt: 1,
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "rgba(255,255,255,0.8)"
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ 
+              height: 120, 
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              color: "white"
+            }}>
+              <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
+                    Product Catalog
+                  </Typography>
+                  <InventoryIcon sx={{ opacity: 0.8 }} />
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {stats.products}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={productProgress}
+                  sx={{ 
+                    mt: 1,
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    "& .MuiLinearProgress-bar": {
+                      bgcolor: "rgba(255,255,255,0.8)"
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         {/* Feature Grid */}
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
               <Card
                 sx={{
-                  height: "100%",
+                  height: 200,
                   display: "flex",
                   flexDirection: "column",
-                  transition: "transform 0.2s, box-shadow 0.2s",
+                  borderRadius: 2,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: "divider",
                   "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: 4,
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                    borderColor: `${feature.color}.main`,
                   },
                 }}
+                onClick={feature.action}
               >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Box color={`${feature.color}.main`} mr={2}>
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  p: 2,
+                  "&:last-child": { pb: 2 }
+                }}>
+                  <Box display="flex" alignItems="center" mb={1.5}>
+                    <Box 
+                      color={`${feature.color}.main`} 
+                      mr={1.5}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        "& .MuiSvgIcon-root": {
+                          fontSize: "1.5rem"
+                        }
+                      }}
+                    >
                       {feature.icon}
                     </Box>
-                    <Typography variant="h6" component="h2">
+                    <Typography 
+                      variant="subtitle1" 
+                      component="h3"
+                      fontWeight={600}
+                      sx={{ fontSize: "0.95rem" }}
+                    >
                       {feature.title}
                     </Typography>
                   </Box>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    mb={1.5}
+                    sx={{ 
+                      fontSize: "0.8rem",
+                      lineHeight: 1.4,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden"
+                    }}
+                  >
                     {feature.description}
                   </Typography>
                   <Chip
                     label={feature.stats}
                     color={feature.color}
                     size="small"
-                    variant="outlined"
+                    variant="filled"
+                    sx={{ 
+                      height: 20,
+                      fontSize: "0.7rem",
+                      fontWeight: 500
+                    }}
                   />
                 </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    color={feature.color}
-                    fullWidth
-                    onClick={feature.action}
-                    variant="contained"
-                  >
-                    Open {feature.title}
-                  </Button>
-                </CardActions>
+
               </Card>
             </Grid>
           ))}
         </Grid>
 
         {/* Quick Actions */}
-        <Box mt={6} textAlign="center">
-          <Typography variant="h5" gutterBottom>
-            Quick Start
-          </Typography>
-          <Typography variant="body1" color="text.secondary" mb={3}>
-            Get your AI business assistant up and running in minutes
-          </Typography>
-          <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<PeopleIcon />}
-              onClick={() => setCustomerDialogOpen(true)}
+        <Card sx={{ mt: 4, borderRadius: 2, bgcolor: "grey.50" }}>
+          <CardContent sx={{ textAlign: "center", py: 3 }}>
+            <Typography 
+              variant="h5" 
+              gutterBottom 
+              fontWeight={600}
+              color="primary"
+            >
+              🚀 Quick Start
+            </Typography>
+            <Typography variant="body1" color="text.secondary" mb={3}>
+              Get your AI business assistant up and running in minutes
+            </Typography>
+            <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
+              <Button
+                variant="contained"
+                size="medium"
+                startIcon={<PeopleIcon />}
+                onClick={() => setCustomerDialogOpen(true)}
+                sx={{ borderRadius: 2, px: 3 }}
             >
               Add First Customer
             </Button>
@@ -285,14 +368,16 @@ export default function HomePage() {
             </Button>
             <Button
               variant="outlined"
-              size="large"
+              size="medium"
               startIcon={<AIIcon />}
               onClick={() => setAiChatOpen(true)}
+              sx={{ borderRadius: 2, px: 3 }}
             >
               Test AI Chat
             </Button>
-          </Box>
-        </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </Container>
 
       {/* Interactive Components */}
