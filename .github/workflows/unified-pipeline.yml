@@ -46,10 +46,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
 
-      - name: Install all dependencies
+      - name: Cache root deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-root-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-root-
+
+      - name: Install root dependencies
         run: npm install
 
       - name: Determine deployment strategy
@@ -83,11 +88,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: npm-backend-${{ hashFiles('package-lock.json', 'packages/backend/package.json') }}
-          restore-keys: |
-            npm-backend-
-      - run: npm install
+          key: npm-backend-${{ hashFiles('packages/backend/package-lock.json') }}
+          restore-keys: npm-backend-
+      - run: npm install --workspace=@smart-business-ai/backend
       - run: npm run test --workspace=@smart-business-ai/backend
+        env:
+          CI: true
+          NODE_ENV: test
 
   test-frontend:
     name: Frontend Tests
@@ -102,12 +109,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: npm-frontend-${{ hashFiles('package-lock.json', 'packages/frontend/package.json') }}
-          restore-keys: |
-            npm-frontend-
-      - run: npm install
-      - name: Run frontend tests
-        run: npm run test --workspace=@smart-business-ai/frontend
+          key: npm-frontend-${{ hashFiles('packages/frontend/package-lock.json') }}
+          restore-keys: npm-frontend-
+      - run: npm install --workspace=@smart-business-ai/frontend
+      - run: npm run test --workspace=@smart-business-ai/frontend
         env:
           CI: true
           NODE_ENV: test
@@ -116,7 +121,7 @@ jobs:
   build-backend:
     name: Backend Build
     runs-on: ubuntu-latest
-    needs: setup
+    needs: test-backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -126,10 +131,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: npm-backend-${{ hashFiles('package-lock.json', 'packages/backend/package.json') }}
-          restore-keys: |
-            npm-backend-
-      - run: npm install
+          key: npm-backend-${{ hashFiles('packages/backend/package-lock.json') }}
+          restore-keys: npm-backend-
+      - run: npm install --workspace=@smart-business-ai/backend
       - run: npm run build --workspace=@smart-business-ai/backend
       - uses: actions/upload-artifact@v4
         with:
@@ -140,7 +144,7 @@ jobs:
   build-frontend:
     name: Frontend Build
     runs-on: ubuntu-latest
-    needs: setup
+    needs: test-frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -150,10 +154,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: npm-frontend-${{ hashFiles('package-lock.json', 'packages/frontend/package.json') }}
-          restore-keys: |
-            npm-frontend-
-      - run: npm install
+          key: npm-frontend-${{ hashFiles('packages/frontend/package-lock.json') }}
+          restore-keys: npm-frontend-
+      - run: npm install --workspace=@smart-business-ai/frontend
       - run: npm run build --workspace=@smart-business-ai/frontend
       - uses: actions/upload-artifact@v4
         with:
@@ -177,8 +180,7 @@ jobs:
         with:
           path: ~/.npm
           key: npm-root-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            npm-root-
+          restore-keys: npm-root-
       - run: npm install
       - run: npm audit --audit-level=moderate || echo "Moderate vulnerabilities found"
       - run: npm audit --audit-level=high || echo "High severity vulnerabilities found"
