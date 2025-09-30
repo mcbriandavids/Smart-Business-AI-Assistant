@@ -1,0 +1,45 @@
+name: Auto-Tag Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Bump tag version
+        id: bump-tag
+        run: |
+          LATEST=${{ steps.get-latest-tag.outputs.latest }}
+          VERSION=${LATEST#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          PATCH=$((PATCH+1))
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create and push new tag
+        run: |
+          NEW_TAG=${{ steps.bump-tag.outputs.new_tag }}
+          git tag -a "$NEW_TAG" -m "Release $NEW_TAG (auto-tagged after promotion)"
+          git push origin "$NEW_TAG"
+
+      - name: Output summary
+        run: "echo '✅ Created new tag: ${{ steps.bump-tag.outputs.new_tag }}'"
