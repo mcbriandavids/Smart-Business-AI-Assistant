@@ -48,7 +48,7 @@ jobs:
       promotion-reason: ${{ steps.promotion-check.outputs.promotion-reason }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,14 +66,14 @@ jobs:
               SHOULD_PROMOTE="true"
               PROMOTION_REASON="Successful dev deployment"
             fi
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          else if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ "${{ github.event.inputs.force-promotion }}" = "true" ]; then
               SOURCE_BRANCH="${{ github.event.inputs.source-branch }}"
               TARGET_BRANCH="${{ github.event.inputs.target-branch }}"
               SHOULD_PROMOTE="true"
               PROMOTION_REASON="Manual force promotion"
             fi
-          elif [ "${{ github.event_name }}" = "schedule" ]; then
+          else if [ "${{ github.event_name }}" = "schedule" ]; then
             git fetch origin dev:dev
             git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
             COMMITS_AHEAD=$(git rev-list --count $TARGET_BRANCH..dev)
@@ -105,7 +105,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -235,9 +235,9 @@ jobs:
 
           if [ "${{ needs.execute-promotion.result }}" = "success" ] && [ "${{ needs.post-promotion-verification.result }}" = "success" ]; then
             echo "✅ PROMOTION SUCCESSFUL: $SOURCE → $TARGET"
-          elif [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
+          else if [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
             echo "❌ PROMOTION FAILED: $SOURCE → $TARGET"
-          elif [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
+          else if [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
             echo "⚠️ PROMOTION VERIFICATION FAILED"
           else
             echo "❌ PROMOTION ABORTED"
