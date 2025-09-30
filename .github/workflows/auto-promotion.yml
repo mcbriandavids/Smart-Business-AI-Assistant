@@ -11,8 +11,7 @@ on:
     branches:
       - dev
   schedule:
-    # Run daily at 2 AM UTC to check for pending promotions
-    - cron: "0 2 * * *"
+    - cron: "0 2 * * *" # ✅ Run daily at 2 AM UTC
   workflow_dispatch:
     inputs:
       force-promotion:
@@ -37,9 +36,10 @@ env:
   DEFAULT_BRANCH: master # ✅ explicitly set default branch
 
 jobs:
+  # -------------------
   # Check Promotion Prerequisites
+  # -------------------
   check-promotion-requirements:
-    name: Check Promotion Requirements
     runs-on: ubuntu-latest
     outputs:
       should-promote: ${{ steps.promotion-check.outputs.should-promote }}
@@ -47,14 +47,12 @@ jobs:
       target-branch: ${{ steps.promotion-check.outputs.target-branch }}
       promotion-reason: ${{ steps.promotion-check.outputs.promotion-reason }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check promotion requirements
-        id: promotion-check
+      - id: promotion-check
         run: |
           SOURCE_BRANCH="dev"
           TARGET_BRANCH="${{ env.DEFAULT_BRANCH }}"
@@ -66,14 +64,14 @@ jobs:
               SHOULD_PROMOTE="true"
               PROMOTION_REASON="Successful dev deployment"
             fi
-          else if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ "${{ github.event.inputs.force-promotion }}" = "true" ]; then
               SOURCE_BRANCH="${{ github.event.inputs.source-branch }}"
               TARGET_BRANCH="${{ github.event.inputs.target-branch }}"
               SHOULD_PROMOTE="true"
               PROMOTION_REASON="Manual force promotion"
             fi
-          else if [ "${{ github.event_name }}" = "schedule" ]; then
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
             git fetch origin dev:dev
             git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
             COMMITS_AHEAD=$(git rev-list --count $TARGET_BRANCH..dev)
@@ -88,58 +86,82 @@ jobs:
           echo "target-branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
           echo "promotion-reason=$PROMOTION_REASON" >> $GITHUB_OUTPUT
 
+  # -------------------
   # Verify Source Branch Quality
+  # -------------------
   verify-source-quality:
-    name: Verify Source Branch Quality
     runs-on: ubuntu-latest
-    needs: [check-promotion-requirements]
+    needs: check-promotion-requirements
     if: needs.check-promotion-requirements.outputs.should-promote == 'true'
     outputs:
       quality-passed: ${{ steps.quality-check.outputs.quality-passed }}
     steps:
-      - name: Checkout source branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ needs.check-promotion-requirements.outputs.source-branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Run quick quality checks
-        id: quality-check
+      - id: quality-check
         run: |
-          echo "Running quality checks on ${{ needs.check-promotion-requirements.outputs.source-branch }}"
+          echo "🔍 Running comprehensive quality checks..."
 
-          npm run test:ci --workspace=packages/backend || exit 1
-          npm run test:ci --workspace=packages/frontend || exit 1
+          # Test backend
+          echo "Testing backend..."
+          if ! npm run test:ci --workspace=packages/backend; then
+            echo "❌ Backend tests failed"
+            exit 1
+          fi
 
-          npm run build --workspace=packages/backend || exit 1
-          npm run build --workspace=packages/frontend || exit 1
+          # Test frontend
+          echo "Testing frontend..."
+          if ! npm run test:ci --workspace=packages/frontend; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          fi
 
-          # ✅ Make audit less strict
-          npm audit --audit-level=high || exit 1
+          # Build backend
+          echo "Building backend..."
+          if ! npm run build --workspace=packages/backend; then
+            echo "❌ Backend build failed"
+            exit 1
+          fi
 
+          # Build frontend
+          echo "Building frontend..."
+          if ! npm run build --workspace=packages/frontend; then
+            echo "❌ Frontend build failed"
+            exit 1
+          fi
+
+          # Security audit
+          echo "Running security audit..."
+          if ! npm audit --audit-level=high; then
+            echo "❌ Security audit failed - high severity vulnerabilities found"
+            exit 1
+          fi
+
+          echo "✅ All quality checks passed"
           echo "quality-passed=true" >> $GITHUB_OUTPUT
 
-  # Execute Promotion
+  # -------------------
+  # Execute Promotion & Semantic Tagging
+  # -------------------
   execute-promotion:
-    name: Execute Branch Promotion
     runs-on: ubuntu-latest
     needs: [check-promotion-requirements, verify-source-quality]
     if: |
       needs.check-promotion-requirements.outputs.should-promote == 'true' &&
       needs.verify-source-quality.outputs.quality-passed == 'true'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -149,12 +171,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Execute promotion
+      - name: Execute promotion (without tagging)
         run: |
           SOURCE_BRANCH="${{ needs.check-promotion-requirements.outputs.source-branch }}"
           TARGET_BRANCH="${{ needs.check-promotion-requirements.outputs.target-branch }}"
-
-          echo "🚀 Starting promotion from $SOURCE_BRANCH to $TARGET_BRANCH"
 
           git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
           git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
@@ -172,52 +192,42 @@ jobs:
 
           git merge $SOURCE_BRANCH --no-ff -F commit_message.txt
           git push origin $TARGET_BRANCH
+          echo "✅ Promotion completed successfully"
 
-      - name: Create promotion tag
+      - name: Note about tagging
         run: |
-          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-          TAG_NAME="promotion/dev-to-${{ env.DEFAULT_BRANCH }}-$TIMESTAMP"
+          echo "ℹ️ Automatic tagging will be handled by the Auto-Tag Release workflow"
+          echo "   This prevents duplicate tagging and maintains separation of concerns"
 
-          git tag -a "$TAG_NAME" -m "Auto-promotion from dev to ${{ env.DEFAULT_BRANCH }}
-
-          Timestamp: $(date -u)
-          Reason: ${{ needs.check-promotion-requirements.outputs.promotion-reason }}
-          Source: ${{ needs.check-promotion-requirements.outputs.source-branch }}
-          Target: ${{ needs.check-promotion-requirements.outputs.target-branch }}"
-
-          git push origin "$TAG_NAME"
-
+  # -------------------
   # Post-Promotion Verification
+  # -------------------
   post-promotion-verification:
-    name: Post-Promotion Verification
     runs-on: ubuntu-latest
     needs: [check-promotion-requirements, execute-promotion]
     if: needs.execute-promotion.result == 'success'
     steps:
-      - name: Checkout promoted branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ needs.check-promotion-requirements.outputs.target-branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify promotion success
-        run: |
+      - run: |
           SOURCE_BRANCH="${{ needs.check-promotion-requirements.outputs.source-branch }}"
           TARGET_BRANCH="${{ needs.check-promotion-requirements.outputs.target-branch }}"
-
           git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
           git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-
           if git merge-base --is-ancestor $SOURCE_BRANCH $TARGET_BRANCH; then
-            echo "✅ Promotion verified: $TARGET_BRANCH contains all commits from $SOURCE_BRANCH"
+            echo "✅ Verified promotion success"
           else
             echo "❌ Promotion verification failed"
             exit 1
           fi
 
-  # Promotion Notifications
+  # -------------------
+  # Notifications
+  # -------------------
   notify-promotion:
-    name: Promotion Notification
     runs-on: ubuntu-latest
     needs:
       [
@@ -227,18 +237,16 @@ jobs:
       ]
     if: always() && needs.check-promotion-requirements.outputs.should-promote == 'true'
     steps:
-      - name: Notify promotion status
-        run: |
+      - run: |
           SOURCE="${{ needs.check-promotion-requirements.outputs.source-branch }}"
           TARGET="${{ needs.check-promotion-requirements.outputs.target-branch }}"
           REASON="${{ needs.check-promotion-requirements.outputs.promotion-reason }}"
-
           if [ "${{ needs.execute-promotion.result }}" = "success" ] && [ "${{ needs.post-promotion-verification.result }}" = "success" ]; then
             echo "✅ PROMOTION SUCCESSFUL: $SOURCE → $TARGET"
-          else if [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
-            echo "❌ PROMOTION FAILED: $SOURCE → $TARGET"
-          else if [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
-            echo "⚠️ PROMOTION VERIFICATION FAILED"
+          elif [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
+            echo "❌ PROMOTION FAILED"
+          elif [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
+            echo "⚠️ VERIFICATION FAILED"
           else
             echo "❌ PROMOTION ABORTED"
           fi
