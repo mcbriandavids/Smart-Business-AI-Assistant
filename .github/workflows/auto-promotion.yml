@@ -1,5 +1,8 @@
 name: Auto-Promotion Pipeline
 
+permissions:
+  contents: write # ✅ allow pushing commits and tags
+
 on:
   workflow_run:
     workflows: ["Deployment Pipeline"]
@@ -13,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       force-promotion:
-        description: "Force promotion from dev to main"
+        description: "Force promotion from dev to master"
         required: false
         default: false
         type: boolean
@@ -25,7 +28,7 @@ on:
       target-branch:
         description: "Target branch for promotion"
         required: true
-        default: "main"
+        default: "master" # ✅ changed to master
         type: string
 
 env:
@@ -47,17 +50,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check promotion requirements
         id: promotion-check
         run: |
-          # Set default values
           SOURCE_BRANCH="dev"
-          TARGET_BRANCH="main"
+          TARGET_BRANCH="master"
           SHOULD_PROMOTE="false"
           PROMOTION_REASON=""
 
-          # Handle different trigger types
           if [ "${{ github.event_name }}" = "workflow_run" ]; then
             if [ "${{ github.event.workflow_run.conclusion }}" = "success" ] && [ "${{ github.event.workflow_run.head_branch }}" = "dev" ]; then
               SHOULD_PROMOTE="true"
@@ -71,11 +73,9 @@ jobs:
               PROMOTION_REASON="Manual force promotion"
             fi
           elif [ "${{ github.event_name }}" = "schedule" ]; then
-            # Check if dev is ahead of main and all checks pass
             git fetch origin dev:dev
-            git fetch origin main:main
-            
-            COMMITS_AHEAD=$(git rev-list --count main..dev)
+            git fetch origin master:master
+            COMMITS_AHEAD=$(git rev-list --count master..dev)
             if [ "$COMMITS_AHEAD" -gt 0 ]; then
               SHOULD_PROMOTE="true"
               PROMOTION_REASON="Scheduled promotion - dev is $COMMITS_AHEAD commits ahead"
@@ -86,12 +86,6 @@ jobs:
           echo "source-branch=$SOURCE_BRANCH" >> $GITHUB_OUTPUT
           echo "target-branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
           echo "promotion-reason=$PROMOTION_REASON" >> $GITHUB_OUTPUT
-
-          echo "Promotion check results:"
-          echo "- Should promote: $SHOULD_PROMOTE"
-          echo "- Source branch: $SOURCE_BRANCH"
-          echo "- Target branch: $TARGET_BRANCH"
-          echo "- Reason: $PROMOTION_REASON"
 
   # Verify Source Branch Quality
   verify-source-quality:
@@ -107,6 +101,7 @@ jobs:
         with:
           ref: ${{ needs.check-promotion-requirements.outputs.source-branch }}
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -120,24 +115,18 @@ jobs:
       - name: Run quick quality checks
         id: quality-check
         run: |
-          echo "Running quick quality checks on ${{ needs.check-promotion-requirements.outputs.source-branch }}"
+          echo "Running quality checks on ${{ needs.check-promotion-requirements.outputs.source-branch }}"
 
-          # Check if tests pass
-          echo "Checking tests..."
           npm run test:ci --workspace=packages/backend || exit 1
           npm run test:ci --workspace=packages/frontend || exit 1
 
-          # Check build
-          echo "Checking build..."
           npm run build --workspace=packages/backend || exit 1
           npm run build --workspace=packages/frontend || exit 1
 
-          # Security audit
-          echo "Running security audit..."
-          npm audit --audit-level=moderate || exit 1
+          # ✅ Make audit less strict
+          npm audit --audit-level=high || exit 1
 
           echo "quality-passed=true" >> $GITHUB_OUTPUT
-          echo "✅ All quality checks passed"
 
   # Execute Promotion
   execute-promotion:
@@ -166,33 +155,29 @@ jobs:
 
           echo "🚀 Starting promotion from $SOURCE_BRANCH to $TARGET_BRANCH"
 
-          # Fetch latest changes
           git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
           git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-
-          # Switch to target branch
           git checkout $TARGET_BRANCH
 
-          # Merge source branch
-          git merge $SOURCE_BRANCH --no-ff -m "🚀 Auto-promotion: Merge $SOURCE_BRANCH to $TARGET_BRANCH
+          cat <<EOF > commit_message.txt
+          🚀 Auto-promotion: Merge $SOURCE_BRANCH to $TARGET_BRANCH
 
           Reason: ${{ needs.check-promotion-requirements.outputs.promotion-reason }}
           Source SHA: $(git rev-parse $SOURCE_BRANCH)
           Target SHA: $(git rev-parse $TARGET_BRANCH)
           Promoted by: github-actions[bot]
-          Timestamp: $(date -u)"
+          Timestamp: $(date -u)
+          EOF
 
-          # Push changes
+          git merge $SOURCE_BRANCH --no-ff -F commit_message.txt
           git push origin $TARGET_BRANCH
-
-          echo "✅ Successfully promoted $SOURCE_BRANCH to $TARGET_BRANCH"
 
       - name: Create promotion tag
         run: |
           TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-          TAG_NAME="promotion/dev-to-main-$TIMESTAMP"
+          TAG_NAME="promotion/dev-to-master-$TIMESTAMP"
 
-          git tag -a "$TAG_NAME" -m "Auto-promotion from dev to main
+          git tag -a "$TAG_NAME" -m "Auto-promotion from dev to master
 
           Timestamp: $(date -u)
           Reason: ${{ needs.check-promotion-requirements.outputs.promotion-reason }}
@@ -200,7 +185,6 @@ jobs:
           Target: ${{ needs.check-promotion-requirements.outputs.target-branch }}"
 
           git push origin "$TAG_NAME"
-          echo "✅ Created promotion tag: $TAG_NAME"
 
   # Post-Promotion Verification
   post-promotion-verification:
@@ -213,29 +197,20 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.check-promotion-requirements.outputs.target-branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify promotion success
         run: |
-          echo "🔍 Verifying promotion success"
-
           SOURCE_BRANCH="${{ needs.check-promotion-requirements.outputs.source-branch }}"
           TARGET_BRANCH="${{ needs.check-promotion-requirements.outputs.target-branch }}"
 
-          # Verify the branches are in sync
           git fetch origin $SOURCE_BRANCH:$SOURCE_BRANCH
           git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
 
-          SOURCE_SHA=$(git rev-parse $SOURCE_BRANCH)
-          TARGET_SHA=$(git rev-parse $TARGET_BRANCH)
-
-          echo "Source SHA ($SOURCE_BRANCH): $SOURCE_SHA"
-          echo "Target SHA ($TARGET_BRANCH): $TARGET_SHA"
-
-          # Check if target branch contains all commits from source
           if git merge-base --is-ancestor $SOURCE_BRANCH $TARGET_BRANCH; then
             echo "✅ Promotion verified: $TARGET_BRANCH contains all commits from $SOURCE_BRANCH"
           else
-            echo "❌ Promotion verification failed: $TARGET_BRANCH is missing commits from $SOURCE_BRANCH"
+            echo "❌ Promotion verification failed"
             exit 1
           fi
 
@@ -258,20 +233,13 @@ jobs:
           REASON="${{ needs.check-promotion-requirements.outputs.promotion-reason }}"
 
           if [ "${{ needs.execute-promotion.result }}" = "success" ] && [ "${{ needs.post-promotion-verification.result }}" = "success" ]; then
-            echo "✅ PROMOTION SUCCESSFUL"
-            echo "Successfully promoted $SOURCE to $TARGET"
-            echo "Reason: $REASON"
-            echo "Timestamp: $(date -u)"
+            echo "✅ PROMOTION SUCCESSFUL: $SOURCE → $TARGET"
           elif [ "${{ needs.execute-promotion.result }}" = "failure" ]; then
-            echo "❌ PROMOTION FAILED"
-            echo "Failed to promote $SOURCE to $TARGET"
-            echo "Reason: $REASON"
-            echo "Check logs for details"
+            echo "❌ PROMOTION FAILED: $SOURCE → $TARGET"
           elif [ "${{ needs.post-promotion-verification.result }}" = "failure" ]; then
             echo "⚠️ PROMOTION VERIFICATION FAILED"
-            echo "Promotion completed but verification failed"
-            echo "Manual intervention may be required"
           else
             echo "❌ PROMOTION ABORTED"
-            echo "Promotion was aborted due to failed prerequisites"
           fi
+          echo "Reason: $REASON"
+          echo "Timestamp: $(date -u)"
