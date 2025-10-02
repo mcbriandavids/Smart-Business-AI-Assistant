@@ -1,0 +1,121 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_run:
+    workflows: ["Multi-Dashboard CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - dev
+      - main
+
+env:
+  NODE_VERSION: "18.x"
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend to Staging
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    environment:
+      name: staging-backend
+      url: https://api-staging.yourdomain.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download Backend Build
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: dist/
+        continue-on-error: true
+
+      - name: Deploy to Backend Staging
+        run: |
+          echo "Deploying backend to staging environment..."
+          echo "Backend API will be available at: https://api-staging.yourdomain.com"
+          # Add your deployment commands here (e.g., Docker, SSH, cloud deployment)
+
+  deploy-admin:
+    name: Deploy Admin Dashboard to Staging
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    environment:
+      name: staging-admin
+      url: https://admin-staging.yourdomain.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download Admin Build
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-build
+          path: admin-build/
+        continue-on-error: true
+
+      - name: Deploy Admin Dashboard
+        run: |
+          echo "Deploying admin dashboard to staging..."
+          echo "Admin Dashboard will be available at: https://admin-staging.yourdomain.com"
+          # Add your deployment commands here (e.g., Vercel, Netlify, S3)
+
+  deploy-user:
+    name: Deploy User Dashboard to Staging
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    environment:
+      name: staging-user
+      url: https://app-staging.yourdomain.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download User Build
+        uses: actions/download-artifact@v4
+        with:
+          name: user-build
+          path: user-build/
+        continue-on-error: true
+
+      - name: Deploy User Dashboard
+        run: |
+          echo "Deploying user dashboard to staging..."
+          echo "User Dashboard will be available at: https://app-staging.yourdomain.com"
+          # Add your deployment commands here
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-admin, deploy-user]
+    if: always()
+    steps:
+      - name: Deployment Notification
+        run: |
+          echo "🚀 Deployment Summary:"
+          echo "Backend: ${{ needs.deploy-backend.result }}"
+          echo "Admin Dashboard: ${{ needs.deploy-admin.result }}"
+          echo "User Dashboard: ${{ needs.deploy-user.result }}"
+
+          if [ "${{ needs.deploy-backend.result }}" = "success" ]; then
+            echo "✅ Backend deployed successfully"
+          fi
+
+          if [ "${{ needs.deploy-admin.result }}" = "success" ]; then
+            echo "✅ Admin Dashboard deployed successfully"
+          fi
+
+          if [ "${{ needs.deploy-user.result }}" = "success" ]; then
+            echo "✅ User Dashboard deployed successfully"
+          fi
