@@ -95,6 +95,23 @@ jobs:
       - name: Run User Dashboard Tests
         run: npm run test:ci --workspace=packages/user-dashboard
 
+  # Frontend Testing
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Frontend Tests
+        run: npm run test:ci --workspace=packages/frontend
+
   # Build Backend
   build-backend:
     name: Build Backend
@@ -107,12 +124,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run build --workspace=packages/backend
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Backend
+        run: npm run build --workspace=packages/backend
       - uses: actions/upload-artifact@v4
         with:
           name: backend-build
           path: packages/backend/dist/
+          retention-days: 7
 
   # Build Admin Dashboard
   build-admin:
@@ -126,12 +146,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run build --workspace=packages/admin-dashboard
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Admin Dashboard
+        run: npm run build --workspace=packages/admin-dashboard
       - uses: actions/upload-artifact@v4
         with:
           name: admin-build
           path: packages/admin-dashboard/.next/
+          retention-days: 7
 
   # Build User Dashboard
   build-user:
@@ -145,9 +168,58 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run build --workspace=packages/user-dashboard
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build User Dashboard
+        run: npm run build --workspace=packages/user-dashboard
       - uses: actions/upload-artifact@v4
         with:
           name: user-build
           path: packages/user-dashboard/.next/
+          retention-days: 7
+
+  # Build Frontend
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    needs: [detect-changes, test-frontend]
+    if: always() && (needs.detect-changes.outputs.frontend-changed == 'true' && (needs.test-frontend.result == 'success' || needs.test-frontend.result == 'skipped'))
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Frontend
+        run: npm run build --workspace=packages/frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: packages/frontend/.next/
+          retention-days: 7
+
+  # Summary Job
+  ci-summary:
+    name: CI Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-admin, build-user, build-frontend]
+    if: always()
+    steps:
+      - name: Check CI Results
+        run: |
+          echo "Backend Build: ${{ needs.build-backend.result }}"
+          echo "Admin Build: ${{ needs.build-admin.result }}"
+          echo "User Build: ${{ needs.build-user.result }}"
+          echo "Frontend Build: ${{ needs.build-frontend.result }}"
+
+          if [[ "${{ needs.build-backend.result }}" == "failure" ]] || \
+             [[ "${{ needs.build-admin.result }}" == "failure" ]] || \
+             [[ "${{ needs.build-user.result }}" == "failure" ]] || \
+             [[ "${{ needs.build-frontend.result }}" == "failure" ]]; then
+            echo "❌ One or more builds failed"
+            exit 1
+          else
+            echo "✅ All builds completed successfully"
+          fi

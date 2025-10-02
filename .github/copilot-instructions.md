@@ -1,59 +1,139 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot -->
+# Smart Business AI Agent - Copilot Instructions
 
-# Smart Business AI Agent Project
+## 🏗️ Architecture Overview
 
-This is an AI-powered customer notification and engagement system for retail businesses.
+This is a **multi-tenant business AI platform** with a monorepo structure containing:
 
-## Project Requirements - ✅ ALL COMPLETE!
+- **Backend**: NestJS API (`packages/backend/`) with modular architecture
+- **Admin Dashboard**: Next.js super-admin interface (`packages/admin-dashboard/`) on port 3002
+- **User Dashboard**: Next.js business user interface (`packages/user-dashboard/`) on port 3003
+- **Frontend**: Next.js main application (`packages/frontend/`) on port 3000
 
-- ✅ **Clarify Project Requirements**: AI business agent with customer notifications, product availability, pricing, delivery coordination
-- ✅ **Scaffold the Project**: Node.js/TypeScript backend with Next.js frontend and AI capabilities
-- ✅ **Customize the Project**: Implemented comprehensive business features:
-  - Customer Management System
-  - Product Inventory Tracking
-  - Multi-channel Notifications (SMS/WhatsApp/Email)
-  - AI Chat Integration with OpenAI
-  - Delivery Coordination
-  - Business Analytics Dashboard
-  - Real-time WebSocket Updates
-- ✅ **Install Required Extensions**: No additional extensions needed
-- ✅ **Compile the Project**: All dependencies installed, backend builds successfully, frontend ready
-- ✅ **Create and Run Task**: Development tasks configured in package.json
-- ✅ **Launch the Project**: Ready to launch with `npm run dev`
-- ✅ **Ensure Documentation is Complete**: Comprehensive README and SETUP_COMPLETE guide created
+### Core Business Modules
 
-## 🎉 PROJECT SUCCESSFULLY COMPLETED!
+Located in `packages/backend/src/modules/`:
 
-### What's Been Built:
+- `customers/` - Customer management and segmentation
+- `products/` - Product catalog and inventory
+- `notifications/` - Multi-channel messaging (SMS/WhatsApp/Email via Twilio)
+- `ai/` - OpenAI integration for chat and recommendations
+- `analytics/` - Business intelligence and reporting
+- `delivery/` - Logistics and coordination
+- `auth/` - JWT-based authentication
+- `websocket/` - Real-time updates via Socket.IO
 
-1. **Full-stack AI Business Agent** with modern tech stack
-2. **Comprehensive Customer Notification System**
-3. **AI-powered chat integration** for customer service
-4. **Advanced inventory management** with alerts
-5. **Business analytics dashboard** for insights
-6. **Multi-channel communication** (SMS, WhatsApp, Email)
-7. **Delivery coordination system**
-8. **Complete documentation** for setup and usage
+## 🚀 Development Workflow
 
-### Next Steps:
+### Quick Start Commands
 
-1. Navigate to project: `cd c:\smart-business-ai-agent`
-2. Install dependencies: `npm install`
-3. Configure API keys in `packages/backend/.env`
-4. Launch with: `npm run dev`
-5. Open http://localhost:3000
+```bash
+# Install all dependencies (required first time)
+npm run install:all
 
-The Smart Business AI Agent is ready to transform your business operations!
+# Start all services in development
+npm run dev  # Runs backend + admin + user dashboards
 
-## Features to Implement
+# Individual services
+npm run dev:backend   # NestJS API on :3001
+npm run dev:admin     # Admin dashboard on :3002
+npm run dev:user      # User dashboard on :3003
+npm run dev:frontend  # Main frontend on :3000
+```
 
-- Customer notification system (SMS/WhatsApp/Email)
-- Product availability tracking and alerts
-- Dynamic pricing updates
-- Delivery coordination and scheduling
-- AI-powered customer chat support
-- Admin dashboard for business management
-- Customer portal for self-service
-- Analytics and reporting
-- Multi-channel communication
-- Inventory management integration
+### Testing & Building
+
+- `npm run test` - Run all test suites across packages
+- `npm run build` - Build all packages for production
+- Backend uses Jest with `jest.config.json` in each package
+
+## 🔧 Key Configuration Patterns
+
+### Environment Setup
+
+Backend requires `.env` in `packages/backend/`:
+
+```env
+# Required API integrations
+OPENAI_API_KEY=your_key_here
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Authentication
+JWT_SECRET=your_jwt_secret
+```
+
+### Module Architecture Pattern
+
+Each backend module follows NestJS conventions:
+
+- `*.module.ts` - Module definition with imports/providers
+- `*.entity.ts` - TypeORM entity definitions (when using DB)
+- `*.service.ts` - Business logic and external API integrations
+- `*.controller.ts` - REST API endpoints with Swagger docs
+
+### Frontend Tech Stack
+
+- **UI Framework**: Material-UI (MUI) v5 with emotion styling
+- **State Management**: React Query for server state
+- **Forms**: React Hook Form with Yup validation
+- **Routing**: Next.js App Router (v14+)
+- **Authentication**: JWT tokens stored in cookies
+
+## 🔌 Integration Points
+
+### Multi-channel Notifications
+
+The `notifications/` module orchestrates:
+
+- **Twilio** for SMS/WhatsApp messaging
+- **Nodemailer** for email campaigns
+- **Template system** for personalized messages
+- **Scheduling** via `@nestjs/schedule` for automated campaigns
+
+### AI Integration
+
+- **OpenAI API** in `ai/` module for chat responses and recommendations
+- **WebSocket** real-time updates for chat interfaces
+- **Context-aware** prompts based on customer history and inventory
+
+### Real-time Features
+
+- **Socket.IO** WebSocket gateway in `websocket/` module
+- **Event-driven** notifications for inventory changes, order updates
+- **Multi-room** support for tenant isolation
+
+## 📝 Development Guidelines
+
+### Adding New Features
+
+1. **Backend**: Create module in `src/modules/` following NestJS patterns
+2. **Frontend**: Add pages in `src/app/` using App Router structure
+3. **Cross-package**: Update root `package.json` scripts if needed
+4. **Documentation**: Update README.md with new capabilities
+
+### API Development
+
+- Use **Swagger decorators** for automatic API documentation
+- Follow **RESTful** conventions with proper HTTP status codes
+- Implement **JWT guards** for protected endpoints
+- Add **validation pipes** using class-validator
+
+### Testing Strategy
+
+- **Unit tests** for services and controllers
+- **Integration tests** for API endpoints
+- **Component tests** for React components using Jest + Testing Library
+- **E2E tests** for critical user workflows
+
+## 🎯 Business Context
+
+This platform serves **small-medium retail businesses** with:
+
+- **Customer engagement** automation via AI-powered notifications
+- **Inventory management** with smart alerts and reordering
+- **Multi-tenant** architecture supporting multiple business accounts
+- **Analytics** for business intelligence and growth insights
+- **Omnichannel** communication (SMS, WhatsApp, Email, Web chat)
+
+When implementing features, consider the **SMB user experience** - prioritize simplicity and automation over complex configuration.

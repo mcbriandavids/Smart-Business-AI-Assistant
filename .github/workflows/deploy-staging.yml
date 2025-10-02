@@ -21,21 +21,30 @@ jobs:
     name: Deploy Backend to Staging
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
-    environment:
-      name: staging-backend
-      url: https://api-staging.yourdomain.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Download Backend Build
+        id: download-backend
+        if: github.event_name == 'workflow_run'
         uses: actions/download-artifact@v4
         with:
           name: backend-build
-          path: dist/
+          path: packages/backend/dist/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
+      - name: Build Backend (if no artifact)
+        if: github.event_name == 'push' || steps.download-backend.outcome == 'failure'
+        run: npm run build --workspace=packages/backend
 
       - name: Deploy to Backend Staging
         run: |
@@ -47,47 +56,69 @@ jobs:
     name: Deploy Admin Dashboard to Staging
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
-    environment:
-      name: staging-admin
-      url: https://admin-staging.yourdomain.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Download Admin Build
+        id: download-admin
+        if: github.event_name == 'workflow_run'
         uses: actions/download-artifact@v4
         with:
           name: admin-build
-          path: admin-build/
+          path: packages/admin-dashboard/.next/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
+      - name: Build Admin Dashboard (if no artifact)
+        if: github.event_name == 'push' || steps.download-admin.outcome == 'failure'
+        run: npm run build --workspace=packages/admin-dashboard
+        env:
+          NEXT_PUBLIC_ENV: staging
 
       - name: Deploy Admin Dashboard
         run: |
           echo "Deploying admin dashboard to staging..."
           echo "Admin Dashboard will be available at: https://admin-staging.yourdomain.com"
-          # Add your deployment commands here (e.g., Vercel, Netlify, S3)
+          # Add your deployment commands here (e.g., Netlify, S3)
 
   deploy-user:
     name: Deploy User Dashboard to Staging
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
-    environment:
-      name: staging-user
-      url: https://app-staging.yourdomain.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Download User Build
+        id: download-user
+        if: github.event_name == 'workflow_run'
         uses: actions/download-artifact@v4
         with:
           name: user-build
-          path: user-build/
+          path: packages/user-dashboard/.next/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
+      - name: Build User Dashboard (if no artifact)
+        if: github.event_name == 'push' || steps.download-user.outcome == 'failure'
+        run: npm run build --workspace=packages/user-dashboard
+        env:
+          NEXT_PUBLIC_ENV: staging
 
       - name: Deploy User Dashboard
         run: |
@@ -95,10 +126,47 @@ jobs:
           echo "User Dashboard will be available at: https://app-staging.yourdomain.com"
           # Add your deployment commands here
 
+  deploy-frontend:
+    name: Deploy Frontend to Staging
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Download Frontend Build
+        id: download-frontend
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: packages/frontend/.next/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Build Frontend (if no artifact)
+        if: github.event_name == 'push' || steps.download-frontend.outcome == 'failure'
+        run: npm run build --workspace=packages/frontend
+        env:
+          NEXT_PUBLIC_ENV: staging
+
+      - name: Deploy Frontend
+        run: |
+          echo "Deploying frontend to staging..."
+          echo "Frontend will be available at: https://staging.yourdomain.com"
+          # Add your deployment commands here
+
   notify-deployment:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [deploy-backend, deploy-admin, deploy-user]
+    needs: [deploy-backend, deploy-admin, deploy-user, deploy-frontend]
     if: always()
     steps:
       - name: Deployment Notification
@@ -107,15 +175,20 @@ jobs:
           echo "Backend: ${{ needs.deploy-backend.result }}"
           echo "Admin Dashboard: ${{ needs.deploy-admin.result }}"
           echo "User Dashboard: ${{ needs.deploy-user.result }}"
+          echo "Frontend: ${{ needs.deploy-frontend.result }}"
 
           if [ "${{ needs.deploy-backend.result }}" = "success" ]; then
-            echo "✅ Backend deployed successfully"
+            echo "✅ Backend deployed successfully to https://api-staging.yourdomain.com"
           fi
 
           if [ "${{ needs.deploy-admin.result }}" = "success" ]; then
-            echo "✅ Admin Dashboard deployed successfully"
+            echo "✅ Admin Dashboard deployed successfully to https://admin-staging.yourdomain.com"
           fi
 
           if [ "${{ needs.deploy-user.result }}" = "success" ]; then
-            echo "✅ User Dashboard deployed successfully"
+            echo "✅ User Dashboard deployed successfully to https://app-staging.yourdomain.com"
+          fi
+
+          if [ "${{ needs.deploy-frontend.result }}" = "success" ]; then
+            echo "✅ Frontend deployed successfully to https://staging.yourdomain.com"
           fi
