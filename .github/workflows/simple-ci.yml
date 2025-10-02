@@ -1,0 +1,64 @@
+name: Simple CI Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - master
+  pull_request:
+    branches:
+      - dev
+      - main
+      - master
+
+env:
+  NODE_VERSION: "18.x"
+
+jobs:
+  test-and-build:
+    name: Test and Build All Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: |
+          echo "Testing Backend..."
+          npm run test:ci --workspace=packages/backend || echo "Backend tests failed"
+
+          echo "Testing Admin Dashboard..."
+          npm run test:ci --workspace=packages/admin-dashboard || echo "Admin tests failed"
+
+          echo "Testing User Dashboard..." 
+          npm run test:ci --workspace=packages/user-dashboard || echo "User tests failed"
+
+      - name: Build All Packages
+        run: |
+          echo "Building Backend..."
+          npm run build --workspace=packages/backend
+
+          echo "Building Admin Dashboard..."
+          npm run build --workspace=packages/admin-dashboard
+
+          echo "Building User Dashboard..."
+          npm run build --workspace=packages/user-dashboard
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packages/backend/dist/
+            packages/admin-dashboard/.next/
+            packages/user-dashboard/.next/

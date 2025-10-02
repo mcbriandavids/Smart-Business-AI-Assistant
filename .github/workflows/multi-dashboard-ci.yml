@@ -56,8 +56,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run test:ci --workspace=packages/backend
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Backend Tests
+        run: npm run test:ci --workspace=packages/backend
 
   # Admin Dashboard Testing
   test-admin:
@@ -71,8 +73,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run test:ci --workspace=packages/admin-dashboard
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Admin Dashboard Tests
+        run: npm run test:ci --workspace=packages/admin-dashboard
 
   # User Dashboard Testing
   test-user:
@@ -86,8 +90,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-      - run: npm ci
-      - run: npm run test:ci --workspace=packages/user-dashboard
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run User Dashboard Tests
+        run: npm run test:ci --workspace=packages/user-dashboard
 
   # Build Backend
   build-backend:
