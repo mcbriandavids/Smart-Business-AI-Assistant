@@ -2,11 +2,13 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Start AI Business Agent Development Server",
+			"label": "Run backend tests",
 			"type": "shell",
-			"command": "npm run dev",
-			"isBackground": true,
-			"problemMatcher": [],
+			"command": "npm test --workspaces --silent",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
 			"group": "build"
 		}
 	]
