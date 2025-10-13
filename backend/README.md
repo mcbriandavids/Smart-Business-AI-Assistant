@@ -169,3 +169,49 @@ npm test
 ## Notes
 
 - Geospatial: numeric `{lat,lng}` stored under `address.coordinates`. Nearby search uses Haversine in-app and returns `{ businesses, count }`. For MongoDB geo queries, migrate to GeoJSON with 2dsphere indexes.
+
+## Run with Docker 🐳
+
+Containerized development and testing is available via the top-level `docker-compose.yml`.
+
+Prerequisites:
+
+- Docker Desktop running (Windows/macOS) or Docker Engine (Linux).
+
+Start the stack:
+
+```bash
+# From repo root (C:\Smart Business AI Assistant)
+docker compose up -d --build
+```
+
+Service ports (host → container):
+
+- Backend API: http://localhost:5001 → 5000
+- MongoDB: localhost:27018 → 27017
+
+Configuration in containers:
+
+- The backend uses `MONGODB_URI=mongodb://mongo:27017/smart-business-ai` to talk to the `mongo` service.
+- Metrics are enabled by default in compose via `ENABLE_METRICS=true`.
+
+Verify endpoints in your browser:
+
+- Health: http://localhost:5001/health
+- Readiness: http://localhost:5001/ready
+- Metrics: http://localhost:5001/metrics
+
+Logs and lifecycle:
+
+```bash
+docker compose ps
+docker compose logs -f backend
+docker compose down          # stop
+docker compose down -v       # stop and remove volumes
+```
+
+Troubleshooting:
+
+- If port 5001 or 27018 is busy, edit `docker-compose.yml` to remap host ports (e.g., `6001:5000`).
+- Hitting `/` may return 404; use `/health` to confirm the API is up.
+- If `/metrics` returns 404, ensure `ENABLE_METRICS=true` in compose (already set here).

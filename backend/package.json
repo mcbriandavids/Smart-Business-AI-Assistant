@@ -4,8 +4,8 @@
   "description": "AI-powered small business marketplace backend API",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "start": "node --no-deprecation src/server.js",
+    "dev": "nodemon --exec \"node --no-deprecation\" src/server.js",
     "test": "mocha --require tests/setup.js --timeout 600000 \"tests/**/*.test.js\"",
     "seed": "node src/scripts/seed.js",
     "check:filenames": "node src/scripts/check-filenames.js"
