@@ -2,9 +2,9 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, ci-cd-github-actions]
+    branches: [master, ci-cd-github-actions]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   build-test:
