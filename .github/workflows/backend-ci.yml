@@ -69,6 +69,50 @@ jobs:
           if [ -f coverage/coverage-summary.json ]; then
             node -e "const s=require('./coverage/coverage-summary.json').total; console.log('Lines:',s.lines.pct+'%','Statements:',s.statements.pct+'%','Branches:',s.branches.pct+'%','Functions:',s.functions.pct+'%')"; fi
 
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "### Backend CI Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/coverage-summary.json ]; then \
+            node -e "const s=require('./coverage/coverage-summary.json').total; console.log('Coverage summary written to job summary.'); console.log('Lines %',s.lines.pct); require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n**Coverage:** Lines ${s.lines.pct}% | Statements ${s.statements.pct}% | Branches ${s.branches.pct}% | Functions ${s.functions.pct}%\n`);"; \
+          else \
+            echo '\nCoverage data missing.\n' >> $GITHUB_STEP_SUMMARY; \
+          fi
+          echo "Minimum lines threshold: $MIN_COVERAGE%" >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Post / Update PR coverage comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let bodyLines = [];
+            bodyLines.push('### Backend CI Coverage Summary');
+            let coverageFound = false;
+            try {
+              const raw = fs.readFileSync('backend/coverage/coverage-summary.json','utf8');
+              const total = JSON.parse(raw).total;
+              coverageFound = true;
+              bodyLines.push(`Lines: **${total.lines.pct}%**  | Statements: ${total.statements.pct}%  | Branches: ${total.branches.pct}%  | Functions: ${total.functions.pct}%`);
+            } catch (e) {
+              bodyLines.push('_Coverage data not available (tests may have failed before generation)._');
+            }
+            bodyLines.push('\n_Minimum enforced lines threshold in workflow:  ' + (process.env.MIN_COVERAGE || 'n/a') + '%_');
+            const marker = '<!-- backend-ci-coverage -->';
+            bodyLines.push('\n' + marker);
+            const newBody = bodyLines.join('\n');
+            const {owner, repo} = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.rest.issues.listComments({owner, repo, issue_number, per_page: 100});
+            const existing = comments.data.find(c => c.user.type === 'Bot' && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({owner, repo, comment_id: existing.id, body: newBody});
+              core.info('Updated existing coverage comment.');
+            } else {
+              await github.rest.issues.createComment({owner, repo, issue_number, body: newBody});
+              core.info('Created new coverage comment.');
+            }
+
       - name: Branch protection guidance
         run: |
           echo "BRANCH PROTECTION SUGGESTION:" \
