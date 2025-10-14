@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --no-deprecation src/server.js",
     "dev": "nodemon --exec \"node --no-deprecation\" src/server.js",
-    "test": "mocha --require tests/setup.js --timeout 600000 \"tests/**/*.test.js\"",
+  "test": "mocha --require tests/setup.js --timeout 600000 \"tests/**/*.test.js\"",
+  "coverage": "nyc --reporter=text-summary --reporter=lcov npm test",
     "seed": "node src/scripts/seed.js",
     "check:filenames": "node src/scripts/check-filenames.js"
   },
@@ -48,6 +49,7 @@
     "mocha": "^10.7.3",
     "chai": "^4.4.1",
     "supertest": "^6.3.3",
-    "mongodb-memory-server": "^10.1.4"
+  "mongodb-memory-server": "^10.1.4",
+  "nyc": "^15.1.0"
   }
 }
