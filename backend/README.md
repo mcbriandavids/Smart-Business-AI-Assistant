@@ -12,7 +12,7 @@ npm run seed   # optional demo data
 npm run dev
 ```
 
-- Health check: `GET http://localhost:5000/health`
+- Health check: `GET http://localhost:3000/health`
 - Environment: `.env` at project root (see variables below)
 
 ## Security & middleware
@@ -126,7 +126,7 @@ Pricing rules:
 ```
 MONGODB_URI=mongodb://localhost:27017/smart-business-ai
 MONGODB_URI_TEST=mongodb://localhost:27017/smart-business-ai-test
-PORT=5000
+PORT=3000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 JWT_SECRET=your-secret
@@ -187,7 +187,7 @@ docker compose up -d --build
 
 Service ports (host → container):
 
-- Backend API: http://localhost:5001 → 5000
+- Backend API: http://localhost:5001 → 3000
 - MongoDB: localhost:27018 → 27017
 
 Configuration in containers:
