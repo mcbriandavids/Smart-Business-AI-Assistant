@@ -118,7 +118,7 @@ jobs:
       - name: Branch protection guidance
         run: |
           echo "BRANCH PROTECTION SUGGESTION:" \
-          && echo "1. Protect 'master' in Repo Settings -> Branches." \
+          && echo "1. Protect 'dev' (and optionally 'master') in Repo Settings -> Branches." \
           && echo "2. Require status check: Backend CI / Install & Test." \
           && echo "3. Adjust minimum coverage in workflow (Enforce minimum coverage step)." \
           && echo "4. Require at least 1 PR approval." \
