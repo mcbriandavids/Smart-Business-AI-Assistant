@@ -55,7 +55,7 @@ jobs:
           if [ -f coverage/coverage-summary.json ]; then \
             node -e "const min=Number(process.env.MIN_COVERAGE)||70;const s=require('./coverage/coverage-summary.json').total; if(s.lines.pct < min){console.error(`Lines coverage ${s.lines.pct}% < ${min}% (FAIL)`);process.exit(1)} else {console.log(`Lines coverage ${s.lines.pct}% >= ${min}% (OK)`)}}"; \
           else \
-            echo 'coverage-summary.json missing' && exit 1; \
+            echo 'coverage/coverage-summary.json missing' && ls -la coverage || true && exit 1; \
           fi
 
       - name: Upload coverage artifact
