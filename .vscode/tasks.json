@@ -10,6 +10,13 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Start AI Business Agent Development Server",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"group": "build"
 		}
 	]
 }
