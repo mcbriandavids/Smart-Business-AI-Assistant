@@ -38,12 +38,14 @@ jobs:
         env:
           MONGODB_URI_TEST: mongodb://127.0.0.1:27017/smart-business-ai-test
           NODE_ENV: test
+          JWT_SECRET: test-secret
         run: npm test
 
       - name: Run coverage
         env:
           MONGODB_URI_TEST: mongodb://127.0.0.1:27017/smart-business-ai-test
           NODE_ENV: test
+          JWT_SECRET: test-secret
         run: npm run coverage
 
       - name: Enforce minimum coverage
