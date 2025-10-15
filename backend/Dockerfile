@@ -9,8 +9,8 @@ RUN npm ci --omit=dev
 # Copy source
 COPY src ./src
 
-# Expose port
-EXPOSE 5000
+# Expose port (matches PORT=3000 inside container)
+EXPOSE 3000
 
 # Run as non-root
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
