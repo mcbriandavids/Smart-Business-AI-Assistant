@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "### Backend CI Summary" >> $GITHUB_STEP_SUMMARY
           if [ -f coverage/coverage-summary.json ]; then \
-            node -e "const s=require('./coverage/coverage-summary.json').total; console.log('Coverage summary written to job summary.'); console.log('Lines %',s.lines.pct); require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n**Coverage:** Lines ${s.lines.pct}% | Statements ${s.statements.pct}% | Branches ${s.branches.pct}% | Functions ${s.functions.pct}%\n`);"; \
+            node -e "const s=require('./coverage/coverage-summary.json').total; const fs=require('fs'); const out=process.env.GITHUB_STEP_SUMMARY; const line='\n**Coverage:** Lines '+s.lines.pct+'% | Statements '+s.statements.pct+'% | Branches '+s.branches.pct+'% | Functions '+s.functions.pct+'%\n'; fs.appendFileSync(out, line); console.log('Coverage summary written to job summary.'); console.log('Lines %', s.lines.pct);"; \
           else \
             echo '\nCoverage data missing.\n' >> $GITHUB_STEP_SUMMARY; \
           fi
