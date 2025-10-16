@@ -62,4 +62,6 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: smart-business-ai-backend:ci-${{ github.sha }}
