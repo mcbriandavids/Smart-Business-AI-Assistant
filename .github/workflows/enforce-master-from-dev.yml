@@ -2,7 +2,7 @@ name: Enforce dev -> master PRs only
 
 on:
   pull_request_target:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   gatekeeper:
