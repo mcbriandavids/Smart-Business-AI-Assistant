@@ -48,7 +48,7 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
+    if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')) || (github.event_name == 'pull_request' && (github.base_ref == 'master' || github.base_ref == 'dev')) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
