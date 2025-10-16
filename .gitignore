@@ -12,6 +12,7 @@ package-lock.json.*
 dist/
 build/
 coverage/
+.nyc_output/
 .cache/
 *.tsbuildinfo
 
