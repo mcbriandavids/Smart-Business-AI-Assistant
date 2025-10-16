@@ -51,7 +51,7 @@ jobs:
       - name: Enforce minimum coverage
         run: |
           # Temporary lowered threshold; current lines ~59.67%. Raise incrementally (e.g., 65 -> 70) as new tests are added.
-          export MIN_COVERAGE=59
+          export MIN_COVERAGE=60
           if [ -f coverage/coverage-summary.json ]; then \
             node -e "const min=Number(process.env.MIN_COVERAGE)||70; const s=require('./coverage/coverage-summary.json').total; if(s.lines.pct < min){console.error('Lines coverage '+s.lines.pct+'% < '+min+'% (FAIL)'); process.exit(1);} else {console.log('Lines coverage '+s.lines.pct+'% >= '+min+'% (OK)');}"; \
           else \
