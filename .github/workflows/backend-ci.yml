@@ -4,7 +4,7 @@ on:
   push:
     branches: ["**"]
   pull_request:
-    branches: [dev]
+    branches: [dev, staging, production, master]
 
 concurrency:
   group: backend-ci-${{ github.ref }}
@@ -126,10 +126,13 @@ jobs:
           && echo "6. (Optional) Enable 'Dismiss stale approvals' & 'Require linear history'."
 
   docker:
-    name: Docker Build (dev and master only)
+    name: Docker Build (dev, staging, master)
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
+    # Run on pushes to dev/staging/master and on PRs targeting dev/staging/master
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging')) ||
+      (github.event_name == 'pull_request' && (github.base_ref == 'master' || github.base_ref == 'dev' || github.base_ref == 'staging'))
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
