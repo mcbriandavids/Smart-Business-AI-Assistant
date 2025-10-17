@@ -4,7 +4,7 @@ export default function Styleguide() {
       <h1>Design System</h1>
       <section>
         <h2>Buttons</h2>
-        <div style={{display:'flex', gap:12, flexWrap:'wrap'}}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <button className="btn btn--primary">Primary</button>
           <button className="btn">Default</button>
           <button className="btn btn--ghost">Ghost</button>
@@ -12,7 +12,7 @@ export default function Styleguide() {
       </section>
       <section>
         <h2>Form</h2>
-        <div className="card" style={{maxWidth:420}}>
+        <div className="card" style={{ maxWidth: 420 }}>
           <label>
             <span>Email</span>
             <input placeholder="you@business.com" />
@@ -27,7 +27,9 @@ export default function Styleguide() {
       </section>
       <section>
         <h2>Cards</h2>
-        <div className="card">This is a card using premium elevation and borders.</div>
+        <div className="card">
+          This is a card using premium elevation and borders.
+        </div>
       </section>
     </div>
   );
