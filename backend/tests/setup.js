@@ -1,6 +1,8 @@
 // Increase timeout to accommodate initial mongodb-memory-server download on CI/Windows
 // Mocha root hooks setup so it works when loaded via --require
 process.env.NODE_ENV = "test";
+// Bind test server to an ephemeral port to avoid conflicts with local dev server
+process.env.PORT = process.env.PORT || "0";
 process.env.MONGOMS_DOWNLOAD_DIR =
   process.env.MONGOMS_DOWNLOAD_DIR ||
   require("path").join(require("os").homedir(), ".cache", "mongodb-binaries");

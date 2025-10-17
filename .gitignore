@@ -1,4 +1,4 @@
-# Root gitignore for Smart Business AI Assistant
+## Root gitignore for Smart Business AI Assistant
 
 # Node.js
 node_modules/
@@ -12,6 +12,7 @@ package-lock.json.*
 dist/
 build/
 coverage/
+.nyc_output/
 .cache/
 *.tsbuildinfo
 
@@ -25,14 +26,21 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Env files (keep examples)
+# Keep optional VS Code workspace files if needed (uncomment to keep tracked)
+# !.vscode/extensions.json
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+
+# Env files (keep examples only)
 .env
 .env.*
 !.env.example
-.vscode/settings.json
 backend/.env
 backend/.env.*
 !backend/.env.example
+
+# Monorepo-ready env rules (if packages exist later)
 packages/**/.env
 packages/**/.env.*
 !packages/**/.env.example
