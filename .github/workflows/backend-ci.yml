@@ -51,7 +51,7 @@ jobs:
           # Temporary lowered threshold; current lines ~59.67%. Raise incrementally (e.g., 65 -> 70) as new tests are added.
           export MIN_COVERAGE=59
           if [ -f coverage/coverage-summary.json ]; then \
-            node -e "const min=Number(process.env.MIN_COVERAGE)||70;const s=require('./coverage/coverage-summary.json').total; if(s.lines.pct < min){console.error(`Lines coverage ${s.lines.pct}% < ${min}% (FAIL)`);process.exit(1)} else {console.log(`Lines coverage ${s.lines.pct}% >= ${min}% (OK)`)}}"; \
+            node -e "const min=Number(process.env.MIN_COVERAGE)||70; const s=require('./coverage/coverage-summary.json').total; if(s.lines.pct < min){console.error('Lines coverage '+s.lines.pct+'% < '+min+'% (FAIL)'); process.exit(1)} else {console.log('Lines coverage '+s.lines.pct+'% >= '+min+'% (OK)')}"; \
           else \
             echo 'coverage-summary.json missing' && exit 1; \
           fi
@@ -74,11 +74,11 @@ jobs:
         run: |
           echo "### Backend CI Summary" >> $GITHUB_STEP_SUMMARY
           if [ -f coverage/coverage-summary.json ]; then \
-            node -e "const s=require('./coverage/coverage-summary.json').total; console.log('Coverage summary written to job summary.'); console.log('Lines %',s.lines.pct); require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n**Coverage:** Lines ${s.lines.pct}% | Statements ${s.statements.pct}% | Branches ${s.branches.pct}% | Functions ${s.functions.pct}%\n`);"; \
+            node -e "const s=require('./coverage/coverage-summary.json').total; const fs=require('fs'); console.log('Coverage summary written to job summary.'); console.log('Lines %', s.lines.pct); const line='\n**Coverage:** Lines '+s.lines.pct+'% | Statements '+s.statements.pct+'% | Branches '+s.branches.pct+'% | Functions '+s.functions.pct+'%\n'; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line);"; \
           else \
             echo '\nCoverage data missing.\n' >> $GITHUB_STEP_SUMMARY; \
           fi
-          echo "Minimum lines threshold: $MIN_COVERAGE%" >> $GITHUB_STEP_SUMMARY || true
+          echo "Minimum lines threshold: ${MIN_COVERAGE:-n/a}%" >> $GITHUB_STEP_SUMMARY || true
 
       - name: Post / Update PR coverage comment
         if: github.event_name == 'pull_request'
