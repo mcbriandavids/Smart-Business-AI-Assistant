@@ -46,7 +46,7 @@ exports.protect = async (req, res, next) => {
 
     try {
       // Verify token
-  const decoded = jwt.verify(token, config.jwtSecret);
+      const decoded = jwt.verify(token, config.jwtSecret);
 
       // Get user from token
       const user = await User.findById(decoded.id).select("-password");
@@ -117,7 +117,7 @@ exports.optionalAuth = async (req, res, next) => {
 
     if (token) {
       try {
-  const decoded = jwt.verify(token, config.jwtSecret);
+        const decoded = jwt.verify(token, config.jwtSecret);
         const user = await User.findById(decoded.id).select("-password");
 
         if (user && user.isActive) {
