@@ -4,7 +4,7 @@ on:
   push:
     branches: ["**"]
   pull_request:
-    branches: [dev]
+    branches: [dev, master]
 
 jobs:
   build-test:
@@ -48,7 +48,7 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
+    if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')) || (github.event_name == 'pull_request' && (github.base_ref == 'master' || github.base_ref == 'dev')) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,4 +62,6 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: smart-business-ai-backend:ci-${{ github.sha }}
