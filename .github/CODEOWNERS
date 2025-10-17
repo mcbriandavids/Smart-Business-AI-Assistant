@@ -1,0 +1,8 @@
+# Require review from the owner for all changes (adjust as your team grows)
+* @mcbriandavids
+
+# UI code owners (optional granular ownership)
+/frontend/** @mcbriandavids
+
+# Backend code owners
+/backend/** @mcbriandavids
