@@ -20,6 +20,7 @@
  *   - check x-api-key against allowed list -> next or 401
  */
 const jwt = require("jsonwebtoken");
+const config = require("../config/config");
 const User = require("../models/user.model");
 
 // Protect routes - verify JWT token
@@ -45,7 +46,12 @@ exports.protect = async (req, res, next) => {
 
     try {
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!config.jwtSecret) {
+        return res
+          .status(500)
+          .json({ success: false, message: "Server configuration error" });
+      }
+      const decoded = jwt.verify(token, config.jwtSecret);
 
       // Get user from token
       const user = await User.findById(decoded.id).select("-password");
@@ -116,7 +122,10 @@ exports.optionalAuth = async (req, res, next) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!config.jwtSecret) {
+          throw new Error("JWT secret missing");
+        }
+        const decoded = jwt.verify(token, config.jwtSecret);
         const user = await User.findById(decoded.id).select("-password");
 
         if (user && user.isActive) {

@@ -33,6 +33,12 @@ function createApp() {
 
   const app = express();
 
+  // Respect proxy headers if running behind a reverse proxy (e.g., Nginx, load balancer)
+  if (config.trustProxy) {
+    const val = config.trustProxy === "true" ? 1 : config.trustProxy;
+    app.set("trust proxy", val);
+  }
+
   // Security middleware
   app.use(helmet());
   // Compression
@@ -73,6 +79,13 @@ function createApp() {
     isDev
       ? {
           level: config.logLevel,
+          redact: [
+            "req.headers.authorization",
+            "req.headers.cookie",
+            "res.headers['set-cookie']",
+            "req.body.password",
+            "req.body.confirmPassword",
+          ],
           transport: {
             target: "pino-pretty",
             options: {
@@ -82,12 +95,24 @@ function createApp() {
             },
           },
         }
-      : { level: config.logLevel }
+      : {
+          level: config.logLevel,
+          redact: [
+            "req.headers.authorization",
+            "req.headers.cookie",
+            "res.headers['set-cookie']",
+            "req.body.password",
+            "req.body.confirmPassword",
+          ],
+        }
   );
   app.use(
     pinoHttp({
       logger: baseLogger,
       autoLogging: !isTest,
+      genReqId: (req, res) =>
+        req.headers["x-request-id"] ||
+        `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       customLogLevel: function (_req, res, err) {
         if (res.statusCode >= 500 || err) return "error";
         if (res.statusCode >= 400) return "warn";
@@ -137,14 +162,14 @@ function createApp() {
   }
 
   // Error handler
-  app.use((err, _req, res, _next) => {
-    // pino-http already logged it; provide minimal response
-    res
-      .status(500)
-      .json({
-        message: "Something went wrong!",
-        error: isDev ? err.message : "Internal server error",
-      });
+  app.use((err, req, res, _next) => {
+    const status = err.status || 500;
+    const id = req.id || req.headers["x-request-id"] || "n/a";
+    res.status(status).json({
+      message: err.publicMessage || "Something went wrong!",
+      requestId: id,
+      ...(isDev ? { error: err.message, stack: err.stack } : {}),
+    });
   });
 
   // 404
@@ -155,7 +180,15 @@ function createApp() {
   // Metrics (non-prod unless explicitly enabled)
   if (config.enableMetrics) {
     client.collectDefaultMetrics({ prefix: "sba_backend_" });
-    app.get("/metrics", async (_req, res) => {
+    app.get("/metrics", async (req, res) => {
+      // Optional token guard to avoid exposing metrics publicly
+      if (config.metricsToken) {
+        const auth = req.headers["authorization"] || "";
+        const token = auth.startsWith("Bearer ") ? auth.slice(7) : undefined;
+        if (token !== config.metricsToken) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      }
       try {
         res.set("Content-Type", client.register.contentType);
         res.end(await client.register.metrics());
