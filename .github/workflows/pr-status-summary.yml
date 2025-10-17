@@ -1,0 +1,64 @@
+name: PR Status Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [master, dev, staging, production]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: read
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Collect check runs
+        id: checks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const headSha = pr.head.sha;
+
+            const { data } = await github.rest.checks.listForRef({
+              owner, repo, ref: headSha
+            });
+
+            const checks = data.check_runs || [];
+            const totals = checks.reduce((acc, c) => {
+              acc[c.conclusion || c.status] = (acc[c.conclusion || c.status] || 0) + 1;
+              return acc;
+            }, {});
+
+            const rows = checks.map(c => `- ${c.name}: ${c.status}${c.conclusion ? ` (${c.conclusion})` : ''}`).join('\n');
+            const summary = [
+              `Ref: ${headSha}`,
+              `Totals: ${Object.entries(totals).map(([k,v]) => `${k}: ${v}`).join(', ')}`,
+              '',
+              rows || '_No check runs found yet._'
+            ].join('\n');
+
+            core.setOutput('summary', summary);
+
+      - name: Comment PR with status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = `### CI status summary\n\n${process.env.SUMMARY}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });
+        env:
+          SUMMARY: ${{ steps.checks.outputs.summary }}
