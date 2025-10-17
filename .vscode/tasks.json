@@ -10,6 +10,12 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Open PR compare view (optional)",
+			"type": "shell",
+			"command": "echo Skipping browser open in CI; compare frontend -> dev in your browser.",
+			"isBackground": false
 		}
 	]
 }
