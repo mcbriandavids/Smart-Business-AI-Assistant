@@ -35,13 +35,24 @@ export default function Login() {
         {error && <div className="alert alert--danger">{error}</div>}
         <label>
           <span>Email</span>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@business.com" />
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@business.com"
+          />
         </label>
         <label>
           <span>Password</span>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
         </label>
-        <button className="btn btn--primary" type="submit">Sign in</button>
+        <button className="btn btn--primary" type="submit">
+          Sign in
+        </button>
       </form>
     </section>
   );

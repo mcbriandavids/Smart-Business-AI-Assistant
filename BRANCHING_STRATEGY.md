@@ -7,15 +7,18 @@ We use a staged flow with a dedicated UI integration branch.
 - `staging` → `master`: Promotion branches, only from `dev`.
 
 ## Naming
+
 - Features: `feat/<short-name>`
 - Fixes: `fix/<short-name>`
 - Chores/Docs: `chore/<short-name>`, `docs/<short-name>`
 
 ## PR Bases
+
 - UI feature PRs: base = `frontend`
 - Promotion PRs: `frontend` → `dev`
 
 ## Guardrails
+
 - CI must pass (tests + coverage gate).
 - At least one approval on protected branches (`frontend`, `dev`).
 - No direct pushes to protected branches.

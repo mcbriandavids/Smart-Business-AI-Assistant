@@ -10,6 +10,7 @@ export default function App() {
         <nav className="nav__links">
           <Link to="/">Home</Link>
           <Link to="/dashboard">Dashboard</Link>
+          <Link to="/styleguide">Styleguide</Link>
           {!authed ? (
             <Link to="/login" className="btn btn--primary">
               Login
