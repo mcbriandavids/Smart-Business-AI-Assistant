@@ -4,12 +4,13 @@
  * Handles registration, login, user info, profile update, password change, logout, and admin creation.
  */
 const jwt = require("jsonwebtoken");
+const config = require("../config/config");
 const User = require("../models/user.model");
 const Business = require("../models/business.model");
 
 const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || "7d",
+  jwt.sign({ id }, config.jwtSecret, {
+    expiresIn: config.jwtExpire,
   });
 
 /** Register a new user. */
