@@ -36,6 +36,12 @@ const config = {
   enableMetrics: process.env.ENABLE_METRICS
     ? process.env.ENABLE_METRICS === "true"
     : env !== "production",
+
+  // Auth
+  // Provide safe defaults in non-production so tests and local dev work out of the box
+  jwtSecret:
+    process.env.JWT_SECRET || (env !== "production" ? "dev-secret" : undefined),
+  jwtExpire: process.env.JWT_EXPIRE || "7d",
 };
 
 module.exports = config;
