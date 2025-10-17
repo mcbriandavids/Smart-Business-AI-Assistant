@@ -1,0 +1,17 @@
+name: Enforce Frontend Branch Policy
+
+on:
+  pull_request:
+    branches: [ frontend ]
+  push:
+    branches: [ frontend ]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Policy
+        run: |
+          echo "UI work should be branched from 'frontend' and merged back via PR."
+          echo "Promotions go from 'frontend' -> 'dev'."
+          echo "Ensure CI passes and coverage meets the gate."
