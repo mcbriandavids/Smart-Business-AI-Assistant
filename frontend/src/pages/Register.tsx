@@ -2,6 +2,9 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
 
+// Strong password: min 8 chars, includes upper, lower, number, special
+const STRONG_PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 type ApiResponse = {
   success?: boolean;
   message?: string;
@@ -31,8 +34,7 @@ export default function Register() {
     const digits = phone.replace(/\D/g, "");
     if (digits.length < 10 || digits.length > 15)
       return "Enter a valid phone number";
-    const strongPwd = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-    if (!strongPwd.test(password))
+    if (!STRONG_PASSWORD_PATTERN.test(password))
       return "Password must be at least 8 characters and include uppercase, lowercase, number, and special character";
     if (password !== confirm) return "Passwords do not match";
     return null;
