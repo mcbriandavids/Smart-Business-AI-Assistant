@@ -53,6 +53,9 @@ export default function Login() {
         <button className="btn btn--primary" type="submit">
           Sign in
         </button>
+        <div style={{ marginTop: 10 }}>
+          New here? <a href="/register">Create an account</a>
+        </div>
       </form>
     </section>
   );
