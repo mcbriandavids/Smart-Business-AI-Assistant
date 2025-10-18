@@ -20,7 +20,9 @@ export default function Login() {
       });
       if (!res.ok) throw new Error("Login failed");
       const data = await res.json();
-      storeToken(data.token);
+      const token = data?.data?.token ?? data?.token;
+      if (!token) throw new Error("No token returned");
+      storeToken(token);
       const to = location.state?.from?.pathname || "/";
       nav(to, { replace: true });
     } catch (err: any) {

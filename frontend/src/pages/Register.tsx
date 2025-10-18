@@ -3,13 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
 
 type ApiResponse = {
-  token?: string;
+  success?: boolean;
   message?: string;
+  data?: {
+    token?: string;
+  };
 };
 
 export default function Register() {
   const nav = useNavigate();
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -17,10 +22,15 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   function validate(): string | null {
-    if (!name.trim()) return "Please enter your name";
+    if (firstName.trim().length < 2)
+      return "First name must be at least 2 characters";
+    if (lastName.trim().length < 2)
+      return "Last name must be at least 2 characters";
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
       return "Enter a valid email";
-    if (password.length < 8) return "Password must be at least 8 characters";
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 10) return "Enter a valid phone number";
+    if (password.length < 6) return "Password must be at least 6 characters";
     if (password !== confirm) return "Passwords do not match";
     return null;
   }
@@ -38,17 +48,25 @@ export default function Register() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          password,
+        }),
       });
       if (!res.ok) {
         const msg = await safeMessage(res);
         throw new Error(msg || "Registration failed");
       }
       const data = (await res.json()) as ApiResponse;
-      if (data?.token) {
-        storeToken(data.token);
+      const token = data?.data?.token;
+      if (token) {
+        storeToken(token);
         nav("/dashboard", { replace: true });
       } else {
+        // If backend doesn't return token on register, go to login
         nav({ pathname: "/login" }, { replace: true });
       }
     } catch (err: any) {
@@ -63,12 +81,33 @@ export default function Register() {
       <form className="card auth__form" onSubmit={onSubmit}>
         <h2>Create your account</h2>
         {error && <div className="alert alert--danger">{error}</div>}
+        <div
+          className="grid"
+          style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}
+        >
+          <label>
+            <span>First name</span>
+            <input
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Jane"
+            />
+          </label>
+          <label>
+            <span>Last name</span>
+            <input
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Doe"
+            />
+          </label>
+        </div>
         <label>
-          <span>Name</span>
+          <span>Phone</span>
           <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Jane Doe"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="(555) 123-4567"
           />
         </label>
         <label>
