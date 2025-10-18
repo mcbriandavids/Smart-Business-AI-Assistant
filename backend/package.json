@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node --no-deprecation src/server.js",
-    "dev": "nodemon --exec \"node --no-deprecation\" src/server.js",
+    "dev": "cross-env PORT=3000 nodemon --exec \"node --no-deprecation\" src/server.js",
     "test": "mocha --require tests/setup.js --timeout 600000 \"tests/**/*.test.js\"",
     "coverage": "nyc --reporter=text-summary --reporter=lcov --reporter=json-summary npm test",
     "seed": "node src/scripts/seed.js",
@@ -45,6 +45,7 @@
     "prom-client": "^15.1.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.0.1",
     "mocha": "^10.7.3",
     "chai": "^4.4.1",

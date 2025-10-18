@@ -20,7 +20,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: process.env.VITE_API_BASE || "http://localhost:3000",
+        // Force IPv4 to avoid ::1 resolution on some Windows setups
+        target: process.env.VITE_API_BASE || "http://127.0.0.1:5000",
         changeOrigin: true,
         secure: false,
       },
