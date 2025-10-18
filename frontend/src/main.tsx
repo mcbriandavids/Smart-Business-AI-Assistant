@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./pages/App";
@@ -6,12 +6,16 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 // cspell:ignore Styleguide
-import Styleguide from "./pages/Styleguide";
+// Lazy-load Styleguide and register it conditionally
+const Styleguide = lazy(() => import("./pages/Styleguide"));
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./styles.css";
 
-const router = createBrowserRouter([
+const SHOW_STYLEGUIDE =
+  import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
+
+const routes: any[] = [
   {
     path: "/",
     element: <App />,
@@ -22,11 +26,19 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [{ path: "dashboard", element: <Dashboard /> }],
       },
-      { path: "styleguide", element: <Styleguide /> },
       { path: "*", element: <NotFound /> },
     ],
   },
-]);
+];
+
+if (SHOW_STYLEGUIDE) {
+  (routes[0].children as any[]).splice(3, 0, {
+    path: "styleguide",
+    element: <Styleguide />,
+  });
+}
+
+const router = createBrowserRouter(routes);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

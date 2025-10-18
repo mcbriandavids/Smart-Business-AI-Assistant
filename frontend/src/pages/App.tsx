@@ -4,6 +4,8 @@ import { isAuthenticated, logout } from "../utils/auth";
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
+  const showStyleguide =
+    import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
   useEffect(() => {
     // Optionally, listen for authentication changes here (e.g., via events or polling)
@@ -18,7 +20,7 @@ export default function App() {
         <nav className="nav__links">
           <Link to="/">Home</Link>
           <Link to="/dashboard">Dashboard</Link>
-          <Link to="/styleguide">Styleguide</Link>
+          {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
           {!authed ? (
             <Link to="/login" className="btn btn--primary">
               Login
