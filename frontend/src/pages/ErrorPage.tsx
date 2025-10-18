@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { isRouteErrorResponse, useRouteError, Link } from "react-router-dom";
 
 export default function ErrorPage() {
   const error = useRouteError() as any;
@@ -30,13 +30,13 @@ export default function ErrorPage() {
             {error?.stack || JSON.stringify(error?.data, null, 2)}
           </pre>
         )}
-      <a
-        href="/"
+      <Link
+        to="/"
         className="btn"
         style={{ display: "inline-block", marginTop: 12 }}
       >
         Go home
-      </a>
+      </Link>
     </div>
   );
 }
