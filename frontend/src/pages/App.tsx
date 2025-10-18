@@ -22,9 +22,14 @@ export default function App() {
           <Link to="/dashboard">Dashboard</Link>
           {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
           {!authed ? (
-            <Link to="/login" className="btn btn--primary">
-              Login
-            </Link>
+            <>
+              <Link to="/login" className="btn">
+                Login
+              </Link>
+              <Link to="/register" className="btn btn--primary">
+                Create account
+              </Link>
+            </>
           ) : (
             <button
               onClick={() => {

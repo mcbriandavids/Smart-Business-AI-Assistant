@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./pages/App";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 // cspell:ignore Styleguide
 // Lazy-load Styleguide and register it conditionally
@@ -22,6 +23,7 @@ const routes: any[] = [
     children: [
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
       {
         element: <ProtectedRoute />,
         children: [{ path: "dashboard", element: <Dashboard /> }],
