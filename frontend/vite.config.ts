@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     include: ["react", "react/jsx-runtime", "react-dom"],
-    dedupe: ["react", "react-dom"],
   },
   resolve: {
     alias: {
@@ -15,12 +14,13 @@ export default defineConfig({
       react: path.resolve(__dirname, "node_modules/react"),
       "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
+    dedupe: ["react", "react-dom"],
   },
   server: {
     port: 5173,
     proxy: {
       "/api": {
-        target: process.env.VITE_API_BASE || "http://127.0.0.1:5002",
+        target: process.env.VITE_API_BASE || "http://localhost:3000",
         changeOrigin: true,
         secure: false,
       },
