@@ -28,8 +28,15 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install dependencies (clean)
-        run: npm ci
+      - name: Install dependencies (prefer ci)
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json found; running npm ci";
+            npm ci;
+          else
+            echo "No package-lock.json; running npm install";
+            npm install;
+          fi
 
       - name: Filename convention check
         run: npm run check:filenames
