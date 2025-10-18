@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
 
 // Strong password: min 8 chars, includes upper, lower, number, special
-const STRONG_PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const STRONG_PASSWORD_PATTERN =
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 type ApiResponse = {
   success?: boolean;
