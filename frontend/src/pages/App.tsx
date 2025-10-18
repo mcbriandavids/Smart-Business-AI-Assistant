@@ -1,8 +1,16 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { isAuthenticated, logout } from "../utils/auth";
 
 export default function App() {
-  const authed = isAuthenticated();
+  const [authed, setAuthed] = useState(isAuthenticated());
+
+  useEffect(() => {
+    // Optionally, listen for authentication changes here (e.g., via events or polling)
+    // For demonstration, we'll just update on mount.
+    setAuthed(isAuthenticated());
+  }, []);
+
   return (
     <div className="app-shell">
       <header className="nav">
@@ -16,37 +24,19 @@ export default function App() {
               Login
             </Link>
           ) : (
-            <button onClick={logout} className="btn btn--ghost">
+            <button
+              onClick={() => {
+                logout();
+                setAuthed(false);
+              }}
+              className="btn btn--ghost"
+            >
               Logout
             </button>
           )}
         </nav>
       </header>
       <main className="page">
-        <Outlet />
-      </main>
-    </div>
-  );
-}
-import { Outlet, Link } from "react-router-dom";
-import { isAuthenticated, logout } from "../utils/auth";
-
-export default function App() {
-  return (
-    <div className="app">
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/login">Login</Link>
-          <Link to="/dashboard">Dashboard</Link>
-          {isAuthenticated() && (
-            <button onClick={logout} style={{ marginLeft: 8 }}>
-              Logout
-            </button>
-          )}
-        </nav>
-      </header>
-      <main>
         <Outlet />
       </main>
     </div>
