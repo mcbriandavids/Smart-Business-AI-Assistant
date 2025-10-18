@@ -5,6 +5,7 @@ import App from "./pages/App";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+// cspell:ignore Styleguide
 import Styleguide from "./pages/Styleguide";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
