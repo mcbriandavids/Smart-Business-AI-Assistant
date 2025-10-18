@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
 
 export default function Login() {
@@ -56,7 +56,7 @@ export default function Login() {
           Sign in
         </button>
         <div style={{ marginTop: 10 }}>
-          New here? <a href="/register">Create an account</a>
+          New here? <Link to="/register">Create an account</Link>
         </div>
       </form>
     </section>
