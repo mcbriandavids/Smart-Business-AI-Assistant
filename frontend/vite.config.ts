@@ -5,9 +5,15 @@ import path from "node:path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ["react", "react/jsx-runtime", "react-dom"],
+    dedupe: ["react", "react-dom"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
   },
   server: {

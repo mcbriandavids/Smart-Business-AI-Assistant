@@ -388,6 +388,27 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(110, 91, 255, 0.25);
 }
+.auth__form a {
+  color: #f0f3ff;
+  font-weight: 600;
+  text-decoration: none;
+  /* subtle glow */
+  text-shadow: 0 0 6px rgba(110, 91, 255, 0.35);
+}
+.auth__form a:visited {
+  color: #f0f3ff;
+}
+.auth__form a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-shadow: 0 0 10px rgba(110, 91, 255, 0.55),
+    0 0 18px rgba(20, 225, 179, 0.25);
+}
+.auth__form a:focus-visible {
+  outline: 2px solid rgba(110, 91, 255, 0.65);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .alert {
   padding: 10px 12px;
   border-radius: 10px;
