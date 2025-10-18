@@ -31,14 +31,9 @@ export default function Register() {
     const digits = phone.replace(/\D/g, "");
     if (digits.length < 10 || digits.length > 15)
       return "Enter a valid phone number";
-    if (password.length < 8) return "Password must be at least 8 characters";
-    if (
-      !password.match(/[A-Z]/) ||
-      !password.match(/[a-z]/) ||
-      !password.match(/[0-9]/) ||
-      !password.match(/[^A-Za-z0-9]/)
-    )
-      return "Password must include uppercase, lowercase, number, and special character";
+    const strongPwd = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!strongPwd.test(password))
+      return "Password must be at least 8 characters and include uppercase, lowercase, number, and special character";
     if (password !== confirm) return "Passwords do not match";
     return null;
   }
