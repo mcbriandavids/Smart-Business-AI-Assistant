@@ -22,3 +22,9 @@ We use a staged flow with a dedicated UI integration branch.
 - CI must pass (tests + coverage gate).
 - At least one approval on protected branches (`frontend`, `dev`).
 - No direct pushes to protected branches.
+
+## Workspaces & lockfile policy
+
+- We use npm workspaces with a single root `package-lock.json` that covers all packages.
+- Do not commit per-package lockfiles (e.g., `backend/package-lock.json`). The root lockfile is authoritative.
+- When adding/updating dependencies in any workspace, run `npm install` from the repo root and commit the updated root lockfile.
