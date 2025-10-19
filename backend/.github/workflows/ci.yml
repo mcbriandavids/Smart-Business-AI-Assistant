@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: .
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,27 +20,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies (ci with fallback)
+      - name: Install workspace dependencies (ci with fallback)
         run: |
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json found; trying npm ci";
-            if npm ci; then
-              echo "npm ci succeeded";
-            else
-              echo "npm ci failed; falling back to npm install";
-              npm install;
-            fi
+          if npm ci --workspaces --include-workspace-root; then
+            echo "npm ci (workspaces) succeeded";
           else
-            echo "No package-lock.json; running npm install";
-            npm install;
+            echo "npm ci (workspaces) failed; falling back to npm install (workspaces)";
+            npm install --workspaces --include-workspace-root;
           fi
 
       - name: Lint filenames
-        run: npm run check:filenames
+        run: npm run check:filenames --workspace backend
 
       - name: Run tests
-        run: npm test
+        run: npm test --workspace backend
         env:
           MONGODB_URI_TEST: mongodb://127.0.0.1:27017/smart-business-ai-test
 
