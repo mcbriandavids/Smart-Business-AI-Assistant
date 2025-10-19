@@ -4,7 +4,8 @@ WORKDIR /app
 
 # Install dependencies separately for better caching
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev
+# Use install instead of ci to avoid lockfile mismatch when the root workspace lockfile is authoritative
+RUN npm install --omit=dev
 
 # Copy source
 COPY src ./src
