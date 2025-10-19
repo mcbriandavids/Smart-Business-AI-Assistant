@@ -21,11 +21,16 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (prefer ci)
+      - name: Install dependencies (ci with fallback)
         run: |
           if [ -f package-lock.json ]; then
-            echo "package-lock.json found; running npm ci";
-            npm ci;
+            echo "package-lock.json found; trying npm ci";
+            if npm ci; then
+              echo "npm ci succeeded";
+            else
+              echo "npm ci failed; falling back to npm install";
+              npm install;
+            fi
           else
             echo "No package-lock.json; running npm install";
             npm install;
