@@ -8,9 +8,12 @@ export default function App() {
     import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
   useEffect(() => {
-    // Optionally, listen for authentication changes here (e.g., via events or polling)
-    // For demonstration, we'll just update on mount.
     setAuthed(isAuthenticated());
+    const onAuth = (e: Event) => {
+      setAuthed(isAuthenticated());
+    };
+    window.addEventListener("auth:change", onAuth as any);
+    return () => window.removeEventListener("auth:change", onAuth as any);
   }, []);
 
   return (
