@@ -97,44 +97,43 @@ export default function App() {
             </button>
           )}
         </nav>
-        {/* Mobile menu button */}
-        <button
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          aria-controls="mobile-menu"
-          onClick={() => setMenuOpen((v) => !v)}
-          className="md:hidden btn btn--ghost"
-          ref={menuButtonRef}
-        >
-          {/* Hamburger / X icon toggle */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            {menuOpen ? (
-              <g>
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </g>
-            ) : (
-              <g>
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </g>
-            )}
-          </svg>
-          <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
-        </button>
       </header>
+      {/* Floating menu button for mobile when header is hidden */}
+      <button
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={menuOpen}
+        aria-controls="mobile-menu"
+        onClick={() => setMenuOpen((v) => !v)}
+        className="mobile-fab md:hidden"
+        ref={(el) => (menuButtonRef.current = el)}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          {menuOpen ? (
+            <g>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </g>
+          ) : (
+            <g>
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </g>
+          )}
+        </svg>
+        <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
+      </button>
       {/* Mobile overlay to dismiss menu */}
       {menuOpen && (
         <button
