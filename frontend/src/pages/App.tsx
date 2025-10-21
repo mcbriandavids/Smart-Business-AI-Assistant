@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { isAuthenticated, logout } from "../utils/auth";
 
@@ -6,6 +6,8 @@ export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const showStyleguide =
     import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
@@ -19,6 +21,51 @@ export default function App() {
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  // Manage focus when menu opens/closes and trap focus within the panel
+  useEffect(() => {
+    const btn = menuButtonRef.current;
+    const panel = panelRef.current;
+
+    if (menuOpen) {
+      // Focus the first focusable element inside the panel
+      const focusables = panel?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const first = focusables && focusables[0];
+      (first || panel)?.focus?.();
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setMenuOpen(false);
+          btn?.focus?.();
+          return;
+        }
+        if (e.key === "Tab") {
+          const items = panel?.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (!items || items.length === 0) return;
+          const firstEl = items[0];
+          const lastEl = items[items.length - 1];
+          const active = document.activeElement as HTMLElement | null;
+          if (e.shiftKey && active === firstEl) {
+            e.preventDefault();
+            lastEl.focus();
+          } else if (!e.shiftKey && active === lastEl) {
+            e.preventDefault();
+            firstEl.focus();
+          }
+        }
+      };
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    } else {
+      // Return focus to the toggle button when closing
+      btn?.focus?.();
+    }
+  }, [menuOpen]);
 
   return (
     <div className="app-shell">
@@ -57,6 +104,7 @@ export default function App() {
           aria-controls="mobile-menu"
           onClick={() => setMenuOpen((v) => !v)}
           className="md:hidden btn btn--ghost"
+          ref={menuButtonRef}
         >
           {/* Hamburger / X icon toggle */}
           <svg
@@ -105,7 +153,12 @@ export default function App() {
           menuOpen ? "slide-panel--open" : "slide-panel--closed"
         }`}
       >
-        <div className="px-4 pb-3 flex flex-col gap-2">
+        <div
+          ref={panelRef}
+          tabIndex={-1}
+          className="px-4 pb-3 flex flex-col gap-2 slide-panel__content"
+          role="menu"
+        >
           <Link to="/" onClick={() => setMenuOpen(false)}>
             Home
           </Link>

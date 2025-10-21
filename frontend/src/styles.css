@@ -103,6 +103,26 @@ body {
   opacity: 1;
 }
 
+/* Animate inner content for a smoother entrance */
+.slide-panel__content {
+  transform: translateY(-6px);
+  opacity: 0.8;
+  transition: transform 220ms ease, opacity 180ms ease;
+  will-change: transform, opacity;
+}
+.slide-panel--open .slide-panel__content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Improve focus visibility inside mobile panel */
+.slide-panel__content a:focus-visible,
+.slide-panel__content button:focus-visible {
+  outline: 2px solid rgba(110, 91, 255, 0.65);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* Full-screen overlay behind the mobile menu (below sticky header) */
 .mobile-overlay {
   position: fixed;
