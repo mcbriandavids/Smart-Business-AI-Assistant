@@ -70,6 +70,34 @@ body {
     display: flex;
   }
 }
+
+/* Accessible helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Slide panel animation for mobile menu */
+.slide-panel {
+  overflow: hidden;
+  transition: max-height 220ms ease, opacity 180ms ease;
+}
+.slide-panel--closed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.slide-panel--open {
+  max-height: 420px; /* big enough for all links */
+  opacity: 1;
+}
 .nav a {
   color: #d7dcff;
   text-decoration: none;

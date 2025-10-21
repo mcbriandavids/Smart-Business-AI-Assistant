@@ -46,17 +46,50 @@ export default function App() {
         </nav>
         {/* Mobile menu button */}
         <button
-          aria-label="Toggle menu"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
           onClick={() => setMenuOpen((v) => !v)}
           className="md:hidden btn btn--ghost"
         >
-          Menu
+          {/* Hamburger / X icon toggle */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            {menuOpen ? (
+              <g>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </g>
+            ) : (
+              <g>
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </g>
+            )}
+          </svg>
+          <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
         </button>
       </header>
-      {/* Mobile nav panel */}
-      {menuOpen && (
-        <nav className="md:hidden px-4 pb-3 flex flex-col gap-2">
+      {/* Mobile nav panel (always rendered for smooth animation) */}
+      <nav
+        id="mobile-menu"
+        aria-hidden={!menuOpen}
+        className={`md:hidden slide-panel ${
+          menuOpen ? "slide-panel--open" : "slide-panel--closed"
+        }`}
+      >
+        <div className="px-4 pb-3 flex flex-col gap-2">
           <Link to="/" onClick={() => setMenuOpen(false)}>
             Home
           </Link>
@@ -97,8 +130,8 @@ export default function App() {
               Logout
             </button>
           )}
-        </nav>
-      )}
+        </div>
+      </nav>
       <main className="page">
         <Outlet />
       </main>
