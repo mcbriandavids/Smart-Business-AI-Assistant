@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --ink: #0b1020;
   --ink-sub: #2b3043;
@@ -75,14 +79,11 @@ body {
   padding: 10px 14px;
   color: #e8ecff;
   background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(0, 0, 0, 0.08)
-  );
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
-  transition: transform 0.12s ease, box-shadow 0.2s ease;
-}
-.btn:hover {
+      180deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(0, 0, 0, 0.08)
+    ),
+    var(--surface);
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
 }
@@ -126,11 +127,9 @@ body {
       ellipse at 70% 70%,
       rgba(20, 225, 179, 0.25),
       transparent 55%
-    );
-  filter: blur(18px) saturate(115%);
-  opacity: 0.55;
-  transform: translateZ(0);
-  animation: blob-morph 26s ease-in-out infinite alternate,
+  ),
+  var(--surface);
+  animation: blob-morph 32s ease-in-out infinite alternate,
     blob-float 22s ease-in-out infinite alternate;
 }
 .blob--2 {
