@@ -52,13 +52,28 @@ function readyStateName() {
   }
 }
 
+let memoryServer = null;
+
 async function connectDB({
   uri,
   maxRetries = DEFAULT_MAX_RETRIES,
   retryDelayMs = DEFAULT_RETRY_DELAY_MS,
   options = {},
 } = {}) {
-  const mongoUri = uri || process.env.MONGODB_URI || config.mongodbUri;
+  let mongoUri = uri || process.env.MONGODB_URI || config.mongodbUri;
+
+  // Optional in-memory Mongo for local dev without Docker
+  if (process.env.DB_USE_MEMORY === "true") {
+    const { MongoMemoryServer } = require("mongodb-memory-server");
+    if (!memoryServer) {
+      memoryServer = await MongoMemoryServer.create();
+      logger.warn(
+        { uri: memoryServer.getUri() },
+        "⚠️ Using in-memory MongoDB (mongodb-memory-server)"
+      );
+    }
+    mongoUri = memoryServer.getUri();
+  }
 
   // Optional debug logs in dev
   if (config.isDev && process.env.MONGOOSE_DEBUG === "true") {
@@ -93,6 +108,10 @@ async function connectDB({
 async function disconnectDB() {
   try {
     await mongoose.disconnect();
+    if (memoryServer) {
+      await memoryServer.stop();
+      memoryServer = null;
+    }
   } catch (err) {
     logger.warn({ err }, "Error while disconnecting MongoDB (ignored)");
   }

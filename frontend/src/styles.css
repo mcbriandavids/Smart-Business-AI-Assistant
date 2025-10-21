@@ -127,8 +127,8 @@ body {
       ellipse at 70% 70%,
       rgba(20, 225, 179, 0.25),
       transparent 55%
-  ),
-  var(--surface);
+    ),
+    var(--surface);
   animation: blob-morph 32s ease-in-out infinite alternate,
     blob-float 22s ease-in-out infinite alternate;
 }
