@@ -62,9 +62,13 @@ body {
   letter-spacing: 0.3px;
 }
 .nav__links {
-  display: flex;
   gap: 14px;
   align-items: center;
+}
+@media (min-width: 768px) {
+  .nav__links {
+    display: flex;
+  }
 }
 .nav a {
   color: #d7dcff;
