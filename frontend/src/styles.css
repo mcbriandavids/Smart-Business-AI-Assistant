@@ -88,6 +88,10 @@ body {
 .slide-panel {
   overflow: hidden;
   transition: max-height 220ms ease, opacity 180ms ease;
+  background: rgba(15, 20, 40, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 .slide-panel--closed {
   max-height: 0;
@@ -97,6 +101,15 @@ body {
 .slide-panel--open {
   max-height: 420px; /* big enough for all links */
   opacity: 1;
+}
+
+/* Full-screen overlay behind the mobile menu (below sticky header) */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 9; /* header is 10; keep overlay underneath header */
 }
 .nav a {
   color: #d7dcff;

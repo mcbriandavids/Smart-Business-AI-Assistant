@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { isAuthenticated, logout } from "../utils/auth";
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
   const showStyleguide =
     import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
@@ -13,6 +14,11 @@ export default function App() {
     // For demonstration, we'll just update on mount.
     setAuthed(isAuthenticated());
   }, []);
+
+  // Close the mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="app-shell">
@@ -81,6 +87,16 @@ export default function App() {
           <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
         </button>
       </header>
+      {/* Mobile overlay to dismiss menu */}
+      {menuOpen && (
+        <button
+          type="button"
+          aria-hidden="true"
+          tabIndex={-1}
+          className="mobile-overlay md:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
       {/* Mobile nav panel (always rendered for smooth animation) */}
       <nav
         id="mobile-menu"
