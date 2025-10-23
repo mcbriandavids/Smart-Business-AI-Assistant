@@ -8,6 +8,16 @@ const isDev = env === "development";
 const isTest = env === "test";
 const isProd = env === "production";
 
+const frontendUrls = (() => {
+  if (process.env.FRONTEND_URLS) {
+    return process.env.FRONTEND_URLS.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  // Default allowlist for dev: Vite and fallback React port
+  return ["http://localhost:5173", "http://localhost:3000"];
+})();
+
 const config = {
   env,
   isDev,
@@ -16,7 +26,10 @@ const config = {
 
   // Server
   port: Number(process.env.PORT || 3000),
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  // Keep single URL for backward compatibility, default to Vite dev port
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+  // Allowlist of acceptable frontend origins (used by app-level CORS)
+  frontendUrls,
 
   // Database
   mongodbUri:

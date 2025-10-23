@@ -8,104 +8,107 @@ export default function App() {
   const location = useLocation();
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const showStyleguide =
-    import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
-  useEffect(() => {
-    // Optionally, listen for authentication changes here (e.g., via events or polling)
-    // For demonstration, we'll just update on mount.
-    setAuthed(isAuthenticated());
-  }, []);
+  // Show the styleguide link in development only (adjust to your needs)
+  const showStyleguide = process.env.NODE_ENV === "development";
 
-  // Close the mobile menu on route change
+  // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
 
-  // Manage focus when menu opens/closes and trap focus within the panel
+  // Keep auth state in sync when component mounts (or when auth changes externally)
   useEffect(() => {
-    const btn = menuButtonRef.current;
-    const panel = panelRef.current;
-
-    if (menuOpen) {
-      // Focus the first focusable element inside the panel
-      const focusables = panel?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      const first = focusables && focusables[0];
-      (first || panel)?.focus?.();
-
-      const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-          e.preventDefault();
-          setMenuOpen(false);
-          btn?.focus?.();
-          return;
-        }
-        if (e.key === "Tab") {
-          const items = panel?.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-          );
-          if (!items || items.length === 0) return;
-          const firstEl = items[0];
-          const lastEl = items[items.length - 1];
-          const active = document.activeElement as HTMLElement | null;
-          if (e.shiftKey && active === firstEl) {
-            e.preventDefault();
-            lastEl.focus();
-          } else if (!e.shiftKey && active === lastEl) {
-            e.preventDefault();
-            firstEl.focus();
-          }
-        }
-      };
-      document.addEventListener("keydown", onKeyDown);
-      return () => document.removeEventListener("keydown", onKeyDown);
-    } else {
-      // Return focus to the toggle button when closing
-      btn?.focus?.();
-    }
-  }, [menuOpen]);
+    setAuthed(isAuthenticated());
+  }, []);
 
   return (
     <div className="app-shell">
-      <header className="nav">
-        <div className="nav__brand">Smart Business AI</div>
-        {/* Desktop nav */}
-        <nav className="nav__links hidden md:flex">
-          <Link to="/">Home</Link>
-          <Link to="/dashboard">Dashboard</Link>
-          {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
-          {!authed ? (
-            <>
-              <Link to="/login" className="btn">
+      {/* Hide header/nav when modal (menuOpen) is open to prevent nav links from showing above overlay */}
+      {/* Hide header/nav when modal is open to prevent background links from showing */}
+      {!menuOpen && (
+        <header className="nav">
+          <div className="nav__brand">Smart Business AI</div>
+          {/* Desktop nav */}
+          <nav className="nav__links hidden md:flex">
+            <Link to="/">Home</Link>
+            <Link to="/dashboard">Dashboard</Link>
+            {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
+            {!authed ? (
+              <>
+                <Link to="/login" className="btn">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn--primary">
+                  Create account
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  logout();
+                  setAuthed(false);
+                }}
+                className="btn btn--ghost"
+              >
+                Logout
+              </button>
+            )}
+          </nav>
+        </header>
+      )}
+      {/* Only show mobile modal on small screens */}
+      {menuOpen && (
+        <div className="modal-overlay-blur flex lg:hidden">
+          <div className="modal-centered-panel">
+            <button
+              aria-label="Close menu"
+              onClick={() => setMenuOpen(false)}
+              className="modal-close-btn text-white text-2xl font-bold focus:outline-none"
+              style={{ background: "none", border: "none" }}
+            >
+              &times;
+            </button>
+            <nav
+              id="mobile-menu"
+              aria-hidden={!menuOpen}
+              className="flex flex-col items-center gap-10 w-full"
+            >
+              <Link
+                to="/"
+                onClick={() => setMenuOpen(false)}
+                className="text-3xl font-extrabold text-white text-center w-full"
+              >
+                Home
+              </Link>
+              <Link
+                to="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className="text-3xl font-extrabold text-white text-center w-full"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="modal-login-link mx-auto"
+              >
                 Login
               </Link>
-              <Link to="/register" className="btn btn--primary">
-                Create account
-              </Link>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                logout();
-                setAuthed(false);
-              }}
-              className="btn btn--ghost"
-            >
-              Logout
-            </button>
-          )}
-        </nav>
-      </header>
-      {/* Floating menu button for mobile when header is hidden */}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Floating menu button for mobile */}
+      {/* Hamburger menu only visible on mobile (xs/sm) */}
       <button
         aria-label={menuOpen ? "Close menu" : "Open menu"}
         aria-expanded={menuOpen}
         aria-controls="mobile-menu"
         onClick={() => setMenuOpen((v) => !v)}
-        className="mobile-fab md:hidden"
-        ref={(el) => (menuButtonRef.current = el)}
+        className="mobile-fab"
+        ref={menuButtonRef}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -134,72 +137,9 @@ export default function App() {
         </svg>
         <span className="sr-only">{menuOpen ? "Close" : "Menu"}</span>
       </button>
-      {/* Mobile overlay to dismiss menu */}
-      {menuOpen && (
-        <button
-          type="button"
-          aria-hidden="true"
-          tabIndex={-1}
-          className="mobile-overlay md:hidden"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-      {/* Mobile nav panel (always rendered for smooth animation) */}
-      <nav
-        id="mobile-menu"
-        aria-hidden={!menuOpen}
-        className={`md:hidden slide-panel ${
-          menuOpen ? "slide-panel--open" : "slide-panel--closed"
-        }`}
-      >
-        <div
-          ref={panelRef}
-          tabIndex={-1}
-          className="px-4 pb-3 flex flex-col gap-2 slide-panel__content"
-          role="menu"
-        >
-          <Link to="/" onClick={() => setMenuOpen(false)}>
-            Home
-          </Link>
-          <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
-            Dashboard
-          </Link>
-          {showStyleguide && (
-            <Link to="/styleguide" onClick={() => setMenuOpen(false)}>
-              Styleguide
-            </Link>
-          )}
-          {!authed ? (
-            <>
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className="btn"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setMenuOpen(false)}
-                className="btn btn--primary"
-              >
-                Create account
-              </Link>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                logout();
-                setAuthed(false);
-                setMenuOpen(false);
-              }}
-              className="btn btn--ghost"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </nav>
+
+      {/* Remove duplicate modal for all screens */}
+
       <main className="page">
         <Outlet />
       </main>
