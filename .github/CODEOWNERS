@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Code owners for critical paths; requires branch protection setting "Require review from Code Owners".
 
 # Adjust owners as needed (use your GitHub username or team slug like @org/team).
@@ -7,5 +8,16 @@
 .github/workflows/\* @mcbriandavids
 
 # Backend code
+=======
+# Require review from the owner for all changes (adjust as your team grows)
+
+- @mcbriandavids
+
+# UI code owners (optional granular ownership)
+
+/frontend/\*\* @mcbriandavids
+
+# Backend code owners
+>>>>>>> frontend
 
 /backend/\*\* @mcbriandavids
