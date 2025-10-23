@@ -170,7 +170,6 @@ function createApp() {
   }
 
   // Error handler
-<<<<<<< HEAD
   app.use((err, req, res, _next) => {
     const status = err.status || 500;
     const id = req.id || req.headers["x-request-id"] || "n/a";
@@ -178,13 +177,6 @@ function createApp() {
       message: err.publicMessage || "Something went wrong!",
       requestId: id,
       ...(isDev ? { error: err.message, stack: err.stack } : {}),
-=======
-  app.use((err, _req, res, _next) => {
-    // pino-http already logged it; provide minimal response
-    res.status(500).json({
-      message: "Something went wrong!",
-      error: isDev ? err.message : "Internal server error",
->>>>>>> frontend
     });
   });
 

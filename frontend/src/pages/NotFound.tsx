@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-export default function NotFound() {
-  return (
-    <section>
-      <h1>404</h1>
-      <p>Page not found.</p>
-=======
 import { Link } from "react-router-dom";
 
 export default function NotFound() {
@@ -15,7 +8,6 @@ export default function NotFound() {
       <Link className="btn btn--ghost" to="/">
         Go home
       </Link>
->>>>>>> frontend
     </section>
   );
 }

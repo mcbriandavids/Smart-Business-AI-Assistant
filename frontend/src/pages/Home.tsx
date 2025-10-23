@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-export default function Home() {
-  return (
-    <section>
-      <h1>Welcome to Smart Business AI</h1>
-      <p>Explore businesses, products, and manage orders.</p>
-=======
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { isAuthenticated } from "../utils/auth";
@@ -39,7 +32,6 @@ export default function Home() {
           )}
         </div>
       </div>
->>>>>>> frontend
     </section>
   );
 }

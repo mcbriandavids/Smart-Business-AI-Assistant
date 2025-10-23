@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import { useState } from "react";
-import { api } from "@/api/client";
-
-export default function Login() {
-=======
 import { FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
@@ -11,22 +5,10 @@ import { login as storeToken } from "../utils/auth";
 export default function Login() {
   const nav = useNavigate();
   const location = useLocation() as any;
->>>>>>> frontend
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-<<<<<<< HEAD
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    try {
-      const res = await api.post("/api/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/";
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Login failed");
-=======
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -45,30 +27,10 @@ export default function Login() {
       nav(to, { replace: true });
     } catch (err: any) {
       setError(err?.message || "Login error");
->>>>>>> frontend
     }
   }
 
   return (
-<<<<<<< HEAD
-    <section>
-      <h1>Login</h1>
-      <form onSubmit={onSubmit}>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Sign in</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-=======
     <section className="auth">
       <form className="card auth__form" onSubmit={onSubmit}>
         <h2>Welcome back</h2>
@@ -97,7 +59,6 @@ export default function Login() {
           New here? <Link to="/register">Create an account</Link>
         </div>
       </form>
->>>>>>> frontend
     </section>
   );
 }
