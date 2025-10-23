@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "version": "2.0.0",
   "tasks": [
     {
@@ -35,3 +36,25 @@
     }
   ]
 }
+=======
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run backend tests",
+			"type": "shell",
+			"command": "npm test --workspaces --silent",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Open PR compare view (optional)",
+			"type": "shell",
+			"command": "echo Skipping browser open in CI; compare frontend -> dev in your browser.",
+			"isBackground": false
+		}
+	]
+}
+>>>>>>> frontend

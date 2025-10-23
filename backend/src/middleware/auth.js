@@ -46,11 +46,14 @@ exports.protect = async (req, res, next) => {
 
     try {
       // Verify token
+<<<<<<< HEAD
       if (!config.jwtSecret) {
         return res
           .status(500)
           .json({ success: false, message: "Server configuration error" });
       }
+=======
+>>>>>>> frontend
       const decoded = jwt.verify(token, config.jwtSecret);
 
       // Get user from token
@@ -122,9 +125,12 @@ exports.optionalAuth = async (req, res, next) => {
 
     if (token) {
       try {
+<<<<<<< HEAD
         if (!config.jwtSecret) {
           throw new Error("JWT secret missing");
         }
+=======
+>>>>>>> frontend
         const decoded = jwt.verify(token, config.jwtSecret);
         const user = await User.findById(decoded.id).select("-password");
 
