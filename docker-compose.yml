@@ -23,5 +23,17 @@ services:
     depends_on:
       - mongo
     restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sba-frontend
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
 volumes:
   mongo_data:
