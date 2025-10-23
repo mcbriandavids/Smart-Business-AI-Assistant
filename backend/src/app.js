@@ -48,10 +48,18 @@ function createApp() {
   });
   app.use("/api/", limiter);
 
-  // CORS
+  // CORS with allowlist support
+  const allowlist = new Set([
+    config.frontendUrl,
+    ...(config.frontendUrls || []),
+  ]);
   app.use(
     cors({
-      origin: config.frontendUrl,
+      origin: function (origin, callback) {
+        // Allow non-browser clients (no origin) and allowed origins
+        if (!origin || allowlist.has(origin)) return callback(null, true);
+        return callback(new Error(`Not allowed by CORS: ${origin}`));
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: [
@@ -139,12 +147,10 @@ function createApp() {
   // Error handler
   app.use((err, _req, res, _next) => {
     // pino-http already logged it; provide minimal response
-    res
-      .status(500)
-      .json({
-        message: "Something went wrong!",
-        error: isDev ? err.message : "Internal server error",
-      });
+    res.status(500).json({
+      message: "Something went wrong!",
+      error: isDev ? err.message : "Internal server error",
+    });
   });
 
   // 404
