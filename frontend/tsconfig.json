@@ -5,29 +5,20 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-<<<<<<< HEAD
     "strict": true,
     "moduleResolution": "bundler",
-=======
-    "moduleResolution": "Bundler",
->>>>>>> frontend
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-<<<<<<< HEAD
       "@/components/*": ["src/components/*"],
       "@/pages/*": ["src/pages/*"],
       "@/utils/*": ["src/utils/*"],
-      "@/api/*": ["src/api/*"]
-    }
-=======
+      "@/api/*": ["src/api/*"],
       "@/*": ["src/*"]
-    },
-    "strict": true
->>>>>>> frontend
+    }
   },
   "include": ["src"]
 }

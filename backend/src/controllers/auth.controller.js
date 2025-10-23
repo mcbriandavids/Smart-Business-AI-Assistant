@@ -8,21 +8,10 @@ const config = require("../config/config");
 const User = require("../models/user.model");
 const Business = require("../models/business.model");
 
-<<<<<<< HEAD
-const generateToken = (id) => {
-  if (!config.jwtSecret) {
-    const err = new Error("JWT secret not configured");
-    err.publicMessage = "Server configuration error";
-    throw err;
-  }
-  return jwt.sign({ id }, config.jwtSecret, { expiresIn: config.jwtExpire });
-};
-=======
 const generateToken = (id) =>
   jwt.sign({ id }, config.jwtSecret, {
     expiresIn: config.jwtExpire,
   });
->>>>>>> frontend
 
 /** Register a new user. */
 exports.register = async (req, res) => {

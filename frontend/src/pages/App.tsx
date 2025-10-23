@@ -1,20 +1,6 @@
-<<<<<<< HEAD
-import { Outlet, Link } from "react-router-dom";
-
-export default function App() {
-  return (
-    <div className="app">
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/login">Login</Link>
-        </nav>
-      </header>
-      <main>
-=======
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { isAuthenticated, logout } from "../utils/auth";
+import { isAuthenticated, logout as doLogout } from "../utils/auth";
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
@@ -24,43 +10,39 @@ export default function App() {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   // Show the styleguide link in development only (adjust to your needs)
-  const showStyleguide = process.env.NODE_ENV === "development";
+  const nodeProcess = (globalThis as any).process;
+  const showStyleguide =
+    (nodeProcess &&
+      nodeProcess.env &&
+      nodeProcess.env.NODE_ENV === "development") ||
+    (import.meta as any)?.env?.MODE === "development";
 
   // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
-  }, [location.pathname]);
-
-  // Keep auth state in sync when component mounts (or when auth changes externally)
-  useEffect(() => {
     setAuthed(isAuthenticated());
-  }, []);
+  }, [location.pathname]);
 
   return (
     <div className="app-shell">
       {/* Hide header/nav when modal (menuOpen) is open to prevent nav links from showing above overlay */}
-      {/* Hide header/nav when modal is open to prevent background links from showing */}
       {!menuOpen && (
         <header className="nav">
           <div className="nav__brand">Smart Business AI</div>
           {/* Desktop nav */}
-          <nav className="nav__links hidden md:flex">
+          <nav>
+            {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
             <Link to="/">Home</Link>
             <Link to="/dashboard">Dashboard</Link>
-            {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
             {!authed ? (
               <>
-                <Link to="/login" className="btn">
-                  Login
-                </Link>
-                <Link to="/register" className="btn btn--primary">
-                  Create account
-                </Link>
+                <Link to="/login">Login</Link>
+                <Link to="/register">Create account</Link>
               </>
             ) : (
               <button
                 onClick={() => {
-                  logout();
+                  doLogout();
                   setAuthed(false);
                 }}
                 className="btn btn--ghost"
@@ -74,7 +56,7 @@ export default function App() {
       {/* Only show mobile modal on small screens */}
       {menuOpen && (
         <div className="modal-overlay-blur flex lg:hidden">
-          <div className="modal-centered-panel">
+          <div className="modal-centered-panel" ref={panelRef}>
             <button
               aria-label="Close menu"
               onClick={() => setMenuOpen(false)}
@@ -102,13 +84,43 @@ export default function App() {
               >
                 Dashboard
               </Link>
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className="modal-login-link mx-auto"
-              >
-                Login
-              </Link>
+              {!authed ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="modal-login-link mx-auto"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="modal-login-link mx-auto"
+                  >
+                    Create account
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    logout();
+                    setAuthed(false);
+                    setMenuOpen(false);
+                  }}
+                  className="modal-login-link mx-auto"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "white",
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                  }}
+                >
+                  Logout
+                </button>
+              )}
             </nav>
           </div>
         </div>
@@ -120,7 +132,7 @@ export default function App() {
         aria-label={menuOpen ? "Close menu" : "Open menu"}
         aria-expanded={menuOpen}
         aria-controls="mobile-menu"
-        onClick={() => setMenuOpen((v) => !v)}
+        onClick={() => setMenuOpen((prev) => !prev)}
         className="mobile-fab"
         ref={menuButtonRef}
       >
@@ -155,7 +167,6 @@ export default function App() {
       {/* Remove duplicate modal for all screens */}
 
       <main className="page">
->>>>>>> frontend
         <Outlet />
       </main>
     </div>

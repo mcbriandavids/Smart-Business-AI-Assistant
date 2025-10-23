@@ -26,17 +26,12 @@ const config = {
   isProd,
 
   // Server
-<<<<<<< HEAD
-  port: Number(envsafe.PORT || process.env.PORT || 3000),
-  frontendUrl:
-    envsafe.FRONTEND_URL || process.env.FRONTEND_URL || "http://localhost:3000",
-=======
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || envsafe.PORT || 3000),
   // Keep single URL for backward compatibility, default to Vite dev port
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+  frontendUrl:
+    process.env.FRONTEND_URL || envsafe.FRONTEND_URL || "http://localhost:5173",
   // Allowlist of acceptable frontend origins (used by app-level CORS)
   frontendUrls,
->>>>>>> frontend
 
   // Database
   mongodbUri:
@@ -63,13 +58,12 @@ const config = {
   logLevel: envsafe.LOG_LEVEL || process.env.LOG_LEVEL || "info",
 
   // Feature flags
-<<<<<<< HEAD
-  // Default: enable metrics in non-production unless explicitly disabled; disabled in production unless explicitly enabled
-  enableMetrics: (() => {
-    const raw = envsafe.ENABLE_METRICS ?? process.env.ENABLE_METRICS;
-    if (typeof raw === "string") return raw === "true";
-    return env !== "production"; // default behavior
-  })(),
+  enableMetrics:
+    typeof process.env.ENABLE_METRICS !== "undefined"
+      ? process.env.ENABLE_METRICS === "true"
+      : typeof envsafe.ENABLE_METRICS !== "undefined"
+      ? envsafe.ENABLE_METRICS === "true"
+      : env !== "production",
 
   // Security/Infra
   trustProxy: envsafe.TRUST_PROXY ?? process.env.TRUST_PROXY, // string | undefined
@@ -77,21 +71,10 @@ const config = {
 
   // Auth
   jwtSecret:
-    envsafe.JWT_SECRET ||
     process.env.JWT_SECRET ||
+    envsafe.JWT_SECRET ||
     (env !== "production" ? "dev-secret" : undefined),
-  jwtExpire: envsafe.JWT_EXPIRE || process.env.JWT_EXPIRE || "7d",
-=======
-  enableMetrics: process.env.ENABLE_METRICS
-    ? process.env.ENABLE_METRICS === "true"
-    : env !== "production",
-
-  // Auth
-  // Provide safe defaults in non-production so tests and local dev work out of the box
-  jwtSecret:
-    process.env.JWT_SECRET || (env !== "production" ? "dev-secret" : undefined),
-  jwtExpire: process.env.JWT_EXPIRE || "7d",
->>>>>>> frontend
+  jwtExpire: process.env.JWT_EXPIRE || envsafe.JWT_EXPIRE || "7d",
 };
 
 module.exports = config;
