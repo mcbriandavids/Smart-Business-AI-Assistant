@@ -131,7 +131,14 @@ exports.login = async (req, res) => {
 /** Get current user */
 exports.me = async (req, res) => {
   try {
+    // Debug: log the Authorization header and user info
+    console.log(
+      "[DEBUG] /api/auth/me Authorization:",
+      req.headers.authorization
+    );
+    console.log("[DEBUG] /api/auth/me req.user:", req.user);
     const user = await User.findById(req.user.id).select("-password");
+    console.log("[DEBUG] /api/auth/me user from DB:", user);
     return res.json({ success: true, data: { user } });
   } catch (error) {
     console.error("Get me error:", error);
