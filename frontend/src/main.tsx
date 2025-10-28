@@ -11,7 +11,9 @@ import NotFound from "./pages/NotFound";
 // Lazy-load Styleguide and register it conditionally
 const Styleguide = lazy(() => import("./pages/Styleguide"));
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import "./styles.css";
 
 const SHOW_STYLEGUIDE =
@@ -29,6 +31,10 @@ const routes: any[] = [
       {
         element: <ProtectedRoute />,
         children: [{ path: "dashboard", element: <Dashboard /> }],
+      },
+      {
+        element: <ProtectedAdminRoute />,
+        children: [{ path: "admin", element: <AdminDashboard /> }],
       },
       { path: "*", element: <NotFound /> },
     ],
