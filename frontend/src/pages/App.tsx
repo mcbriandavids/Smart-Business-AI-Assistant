@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { isAuthenticated, logout as doLogout } from "../utils/auth";
+import { isAuthenticated, logout as doLogout, getUser } from "../utils/auth";
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthenticated());
+  const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -21,6 +22,8 @@ export default function App() {
   useEffect(() => {
     setMenuOpen(false);
     setAuthed(isAuthenticated());
+    const user = getUser();
+    setIsAdmin(!!user && user.role === "admin");
   }, [location.pathname]);
 
   return (
@@ -34,6 +37,7 @@ export default function App() {
             {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
             <Link to="/">Home</Link>
             <Link to="/dashboard">Dashboard</Link>
+            {isAdmin && <Link to="/admin">Admin Dashboard</Link>}
             {!authed ? (
               <>
                 <Link to="/login">Login</Link>
@@ -104,7 +108,7 @@ export default function App() {
               ) : (
                 <button
                   onClick={() => {
-                    logout();
+                    doLogout();
                     setAuthed(false);
                     setMenuOpen(false);
                   }}
