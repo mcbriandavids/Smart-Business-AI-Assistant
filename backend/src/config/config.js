@@ -2,8 +2,9 @@
 // Loads environment variables once and provides typed, defaulted values
 
 require("dotenv").config();
+const envsafe = require("./env");
 
-const env = process.env.NODE_ENV || "development";
+const env = envsafe.NODE_ENV || process.env.NODE_ENV || "development";
 const isDev = env === "development";
 const isTest = env === "test";
 const isProd = env === "production";
@@ -25,36 +26,55 @@ const config = {
   isProd,
 
   // Server
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || envsafe.PORT || 3000),
   // Keep single URL for backward compatibility, default to Vite dev port
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+  frontendUrl:
+    process.env.FRONTEND_URL || envsafe.FRONTEND_URL || "http://localhost:5173",
   // Allowlist of acceptable frontend origins (used by app-level CORS)
   frontendUrls,
 
   // Database
   mongodbUri:
-    process.env.MONGODB_URI || "mongodb://localhost:27017/smart-business-ai",
+    envsafe.MONGODB_URI ||
+    process.env.MONGODB_URI ||
+    "mongodb://localhost:27017/smart-business-ai",
 
   // Security / Rate limit
-  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
-  rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 100),
+  rateLimitWindowMs: Number(
+    envsafe.RATE_LIMIT_WINDOW_MS ||
+      process.env.RATE_LIMIT_WINDOW_MS ||
+      15 * 60 * 1000
+  ),
+  rateLimitMax: Number(
+    envsafe.RATE_LIMIT_MAX || process.env.RATE_LIMIT_MAX || 100
+  ),
 
   // Compression
-  compressionThreshold: Number(process.env.COMPRESSION_THRESHOLD || 1024),
+  compressionThreshold: Number(
+    envsafe.COMPRESSION_THRESHOLD || process.env.COMPRESSION_THRESHOLD || 1024
+  ),
 
   // Logging
-  logLevel: process.env.LOG_LEVEL || "info",
+  logLevel: envsafe.LOG_LEVEL || process.env.LOG_LEVEL || "info",
 
   // Feature flags
-  enableMetrics: process.env.ENABLE_METRICS
-    ? process.env.ENABLE_METRICS === "true"
-    : env !== "production",
+  enableMetrics:
+    typeof process.env.ENABLE_METRICS !== "undefined"
+      ? process.env.ENABLE_METRICS === "true"
+      : typeof envsafe.ENABLE_METRICS !== "undefined"
+      ? envsafe.ENABLE_METRICS === "true"
+      : env !== "production",
+
+  // Security/Infra
+  trustProxy: envsafe.TRUST_PROXY ?? process.env.TRUST_PROXY, // string | undefined
+  metricsToken: envsafe.METRICS_TOKEN ?? process.env.METRICS_TOKEN, // string | undefined
 
   // Auth
-  // Provide safe defaults in non-production so tests and local dev work out of the box
   jwtSecret:
-    process.env.JWT_SECRET || (env !== "production" ? "dev-secret" : undefined),
-  jwtExpire: process.env.JWT_EXPIRE || "7d",
+    process.env.JWT_SECRET ||
+    envsafe.JWT_SECRET ||
+    (env !== "production" ? "dev-secret" : undefined),
+  jwtExpire: process.env.JWT_EXPIRE || envsafe.JWT_EXPIRE || "7d",
 };
 
 module.exports = config;

@@ -1,3 +1,132 @@
+const Order = require("../models/order.model");
+const User = require("../models/user.model");
+
+// Get customers for a business sorted by patronage (total spent, order count)
+exports.getCustomersByPatronage = async (req, res) => {
+  try {
+    // Find business by owner (current user)
+    const business = await Business.findOne({ owner: req.user.id });
+    if (!business) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Business not found" });
+    }
+    // Aggregate orders for this business, group by customer
+    const pipeline = [
+      { $match: { business: business._id } },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: "$customer",
+          totalSpent: { $sum: "$pricing.total" },
+          orderCount: { $sum: 1 },
+          lastOrder: { $max: "$createdAt" },
+          latestOrderStatus: { $first: "$status" },
+        },
+      },
+      { $sort: { totalSpent: -1, orderCount: -1, lastOrder: -1 } },
+      { $limit: 100 },
+    ];
+    const customers = await Order.aggregate(pipeline);
+    // Populate customer details
+    const populated = await User.find({
+      _id: { $in: customers.map((c) => c._id) },
+    }).select("firstName lastName email phone avatar");
+    // Map user details into result
+    const result = customers.map((c) => {
+      const user = populated.find(
+        (u) => u._id.toString() === c._id?.toString()
+      );
+      return {
+        customerId: c._id,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        phone: user?.phone,
+        avatar: user?.avatar,
+        totalSpent: c.totalSpent,
+        orderCount: c.orderCount,
+        lastOrder: c.lastOrder,
+        deliveryStatus: c.latestOrderStatus,
+      };
+    });
+    return res.json({ success: true, data: { customers: result } });
+  } catch (error) {
+    logger.error({ err: error }, "Get customers by patronage error");
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+// Get business content for owner
+exports.getContent = async (req, res) => {
+  try {
+    // Find business by owner (current user)
+    const business = await Business.findOne({ owner: req.user.id });
+    if (!business) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Business not found" });
+    }
+    // Return only content fields (description, name, etc.)
+    return res.json({
+      success: true,
+      data: {
+        id: business._id,
+        name: business.name,
+        description: business.description,
+        category: business.category,
+        logo: business.logo,
+        images: business.images,
+        contact: business.contact,
+        address: business.address,
+        businessHours: business.businessHours,
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Get business content error");
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Update business content for owner
+exports.updateContent = async (req, res) => {
+  try {
+    const business = await Business.findOne({ owner: req.user.id });
+    if (!business) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Business not found" });
+    }
+    const {
+      name,
+      description,
+      category,
+      logo,
+      images,
+      contact,
+      address,
+      businessHours,
+    } = req.body;
+    if (name) business.name = name;
+    if (description) business.description = description;
+    if (category) business.category = category;
+    if (logo) business.logo = logo;
+    if (images) business.images = images;
+    if (contact) business.contact = { ...business.contact, ...contact };
+    if (address) business.address = { ...business.address, ...address };
+    if (businessHours)
+      business.businessHours = { ...business.businessHours, ...businessHours };
+    await business.save();
+    return res.json({ success: true, data: { business } });
+  } catch (error) {
+    logger.error({ err: error }, "Update business content error");
+    return res.status(500).json({
+      success: false,
+      message: "Server error updating business content",
+    });
+  }
+};
 const Business = require("../models/business.model");
 const logger = require("../utils/logger");
 /**

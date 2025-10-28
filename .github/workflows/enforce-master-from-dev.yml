@@ -1,0 +1,19 @@
+name: Enforce dev -> master PRs only
+
+on:
+  pull_request_target:
+    branches: [master]
+
+jobs:
+  gatekeeper:
+    name: Verify PR comes from dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure source branch is dev
+        run: |
+          echo "Base branch: $GITHUB_BASE_REF"
+          echo "Head branch: $GITHUB_HEAD_REF"
+          if [ "$GITHUB_HEAD_REF" != "dev" ]; then
+            echo "Only PRs from 'dev' may be merged into 'master'. Please open a PR into 'dev' first." >&2
+            exit 1
+          fi

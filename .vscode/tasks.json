@@ -1,4 +1,42 @@
 {
+<<<<<<< HEAD
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run backend tests",
+      "type": "shell",
+      "command": "npm test --silent",
+      "options": { "cwd": "backend" },
+      "isBackground": false
+    },
+    {
+      "label": "Start AI Business Agent Development Server",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "backend" },
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "owner": "backend-dev",
+          "fileLocation": "search",
+          "pattern": {
+            "regexp": "^([^:]+):(\\d+):(\\d+):\\s(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "\\[nodemon\\] starting|Starting development server|server starting|node .+server\\.js|npm run dev",
+            "endsPattern": "Server running|Listening on|ready - started server|Server listening"
+          }
+        }
+      ]
+    }
+  ]
+}
+=======
 	"version": "2.0.0",
 	"tasks": [
 		{
@@ -19,3 +57,4 @@
 		}
 	]
 }
+>>>>>>> frontend

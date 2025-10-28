@@ -1,6 +1,8 @@
 // Increase timeout to accommodate initial mongodb-memory-server download on CI/Windows
 // Mocha root hooks setup so it works when loaded via --require
 process.env.NODE_ENV = "test";
+// Bind test server to an ephemeral port to avoid conflicts with local dev server
+process.env.PORT = process.env.PORT || "0";
 // Ensure JWT secrets exist for tests (CI environments may not provide them)
 process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 process.env.JWT_EXPIRE = process.env.JWT_EXPIRE || "7d";
