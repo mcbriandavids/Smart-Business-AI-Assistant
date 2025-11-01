@@ -19,6 +19,8 @@ import "./styles.css";
 const SHOW_STYLEGUIDE =
   import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
+import VendorCustomersPage from "./pages/Vendor/Customers";
+import NotificationsPage from "./pages/Notifications";
 const routes: any[] = [
   {
     path: "/",
@@ -30,7 +32,11 @@ const routes: any[] = [
       { path: "register", element: <Register /> },
       {
         element: <ProtectedRoute />,
-        children: [{ path: "dashboard", element: <Dashboard /> }],
+        children: [
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "vendor/customers", element: <VendorCustomersPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
+        ],
       },
       {
         element: <ProtectedAdminRoute />,

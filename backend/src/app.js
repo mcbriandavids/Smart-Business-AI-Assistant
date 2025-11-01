@@ -165,6 +165,7 @@ function createApp() {
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/vendor-customers", vendorCustomerRoutes);
+  app.use("/api/customers", require("./routes/customers"));
   if (isTest && testRoutes) {
     app.use("/api/test", testRoutes);
   }
@@ -185,8 +186,8 @@ function createApp() {
     res.status(404).json({ message: "Route not found" })
   );
 
-  // Metrics (non-prod unless explicitly enabled)
-  if (config.enableMetrics) {
+  // Metrics (non-prod unless explicitly enabled, and not in test)
+  if (config.enableMetrics && !config.isTest) {
     client.collectDefaultMetrics({ prefix: "sba_backend_" });
     app.get("/metrics", async (req, res) => {
       // Optional token guard to avoid exposing metrics publicly

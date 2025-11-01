@@ -61,13 +61,28 @@ exports.getCustomersByPatronage = async (req, res) => {
 // Get business content for owner
 exports.getContent = async (req, res) => {
   try {
+    // Debug: log user id
+    console.log("[getContent] req.user.id:", req.user.id);
     // Find business by owner (current user)
     const business = await Business.findOne({ owner: req.user.id });
     if (!business) {
+      console.log("[getContent] No business found for owner:", req.user.id);
+      // Also log all business owners for inspection
+      const allOwners = await Business.find({}).select("owner _id name");
+      console.log(
+        "[getContent] All business owners:",
+        allOwners.map((b) => ({ id: b._id, owner: b.owner, name: b.name }))
+      );
       return res
         .status(404)
         .json({ success: false, message: "Business not found" });
     }
+    console.log(
+      "[getContent] Found business:",
+      business._id,
+      "owner:",
+      business.owner
+    );
     // Return only content fields (description, name, etc.)
     return res.json({
       success: true,
