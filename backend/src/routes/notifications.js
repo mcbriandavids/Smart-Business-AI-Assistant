@@ -1,3 +1,6 @@
+// @desc    Get notifications sent by the current user (as sender)
+// @route   GET /api/notifications/sent
+// @access  Private
 /**
  * Notifications Routes
  * --------------------
@@ -9,6 +12,11 @@ const validate = require("../middleware/validate");
 const Joi = require("joi");
 const Controller = require("../controllers/notifications.controller");
 const router = express.Router();
+
+// @desc    Get notifications sent by the current user (as sender)
+// @route   GET /api/notifications/sent
+// @access  Private
+router.get("/sent", protect, Controller.listSent);
 
 // @desc    Get current user's notifications
 // @route   GET /api/notifications

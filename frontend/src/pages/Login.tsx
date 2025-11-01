@@ -23,8 +23,7 @@ export default function Login() {
       const token = data?.data?.token ?? data?.token;
       if (!token) throw new Error("No token returned");
       storeToken(token);
-      const to = location.state?.from?.pathname || "/";
-      nav(to, { replace: true });
+      nav("/dashboard", { replace: true });
     } catch (err: any) {
       setError(err?.message || "Login error");
     }

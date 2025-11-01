@@ -37,6 +37,7 @@ export default function App() {
             {showStyleguide && <Link to="/styleguide">Styleguide</Link>}
             <Link to="/">Home</Link>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/vendor/customers">Customers</Link>
             {isAdmin && <Link to="/admin">Admin Dashboard</Link>}
             {!authed ? (
               <>

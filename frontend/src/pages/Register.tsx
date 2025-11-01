@@ -59,6 +59,7 @@ export default function Register() {
           email: email.trim(),
           phone: phone.trim(),
           password,
+          role: "vendor",
         }),
       });
       if (!res.ok) {
@@ -66,14 +67,8 @@ export default function Register() {
         throw new Error(msg || "Registration failed");
       }
       const data = (await res.json()) as ApiResponse;
-      const token = data?.data?.token;
-      if (token) {
-        storeToken(token);
-        nav("/dashboard", { replace: true });
-      } else {
-        // If backend doesn't return token on register, go to login
-        nav("/login", { replace: true });
-      }
+      // Always redirect to login after registration
+      nav("/login", { replace: true });
     } catch (err: any) {
       setError(err?.message || "Registration error");
     } finally {
