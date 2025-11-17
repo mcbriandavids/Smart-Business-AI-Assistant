@@ -92,12 +92,57 @@ exports.update = async (req, res) => {
       isVerified,
       isActive,
       role,
+      social,
     } = req.body;
+    // Sanitize address: remove coordinates if undefined
+    let sanitizedAddress = undefined;
+    if (address) {
+      sanitizedAddress = {};
+      for (const key of Object.keys(address)) {
+        if (key === "coordinates") {
+          if (
+            address.coordinates &&
+            typeof address.coordinates === "object" &&
+            !Array.isArray(address.coordinates)
+          ) {
+            sanitizedAddress.coordinates = address.coordinates;
+          }
+          // else: skip coordinates if not a valid object
+        } else if (address[key] !== undefined) {
+          sanitizedAddress[key] = address[key];
+        }
+      }
+    }
+    // Remove coordinates if undefined before merging
+    if (
+      address &&
+      Object.prototype.hasOwnProperty.call(address, "coordinates") &&
+      address.coordinates === undefined
+    ) {
+      delete address.coordinates;
+    }
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (phone) user.phone = phone;
     if (address) user.address = { ...user.address, ...address };
+    if (sanitizedAddress)
+      user.address = { ...user.address, ...sanitizedAddress };
+    // Only set user.address.coordinates if the incoming value is a valid object
+    if (
+      sanitizedAddress &&
+      Object.prototype.hasOwnProperty.call(sanitizedAddress, "coordinates")
+    ) {
+      if (
+        sanitizedAddress.coordinates &&
+        typeof sanitizedAddress.coordinates === "object" &&
+        !Array.isArray(sanitizedAddress.coordinates)
+      ) {
+        user.address.coordinates = sanitizedAddress.coordinates;
+      }
+      // If coordinates is undefined/null/invalid, do NOT overwrite existing value
+    }
     if (preferences) user.preferences = { ...user.preferences, ...preferences };
+    if (social) user.social = { ...user.social, ...social };
     if (req.user.role === "admin") {
       if (typeof isVerified === "boolean") user.isVerified = isVerified;
       if (typeof isActive === "boolean") user.isActive = isActive;

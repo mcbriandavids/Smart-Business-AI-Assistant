@@ -1,3 +1,33 @@
+/** List notifications sent by the current user (as sender). */
+exports.listSent = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Notification.find({ sender: req.user.id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Notification.countDocuments({ sender: req.user.id }),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        items,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Get sent notifications error");
+    return res.status(500).json({
+      success: false,
+      message: "Server error getting sent notifications",
+    });
+  }
+};
 /**
  * Notifications Controller
  * ------------------------

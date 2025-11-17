@@ -139,37 +139,46 @@ exports.broadcast = async (req, res) => {
       }).limit(500);
     }
 
+    // Filter to unique customers (registered users only)
+    const uniqueCustomerIds = Array.from(
+      new Set(
+        targets.map((t) => t.customer && t.customer.toString()).filter(Boolean)
+      )
+    );
     let created = 0;
-    for (const t of targets) {
-      if (t.customer) {
-        await createInApp(
-          {
-            recipient: t.customer,
-            sender: vendorId,
-            type: "other",
-            title,
-            message,
-            data: {
-              productId: product,
-              customData: {
-                price,
-                deliveryOffer,
-                deliveryFee,
-                vendorContactId: t.id,
-              },
+    for (const customerId of uniqueCustomerIds) {
+      await createInApp(
+        {
+          recipient: customerId,
+          sender: vendorId,
+          type: "other",
+          title,
+          message,
+          data: {
+            productId: product,
+            customData: {
+              price,
+              deliveryOffer,
+              deliveryFee,
+              // Optionally, you can include all vendorContactIds for this customer
+              vendorContactIds: targets
+                .filter(
+                  (t) => t.customer && t.customer.toString() === customerId
+                )
+                .map((t) => t.id),
             },
           },
-          req.io,
-          `user_${t.customer}`,
-          "notification"
-        );
-        created += 1;
-      }
+        },
+        req.io,
+        `user_${customerId}`,
+        "notification"
+      );
+      created += 1;
     }
 
     return res.status(201).json({
       success: true,
-      data: { targeted: targets.length, inAppCreated: created },
+      data: { targeted: uniqueCustomerIds.length, inAppCreated: created },
     });
   } catch (e) {
     console.error("Vendor broadcast error:", e);

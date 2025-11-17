@@ -11,12 +11,18 @@ import NotFound from "./pages/NotFound";
 // Lazy-load Styleguide and register it conditionally
 const Styleguide = lazy(() => import("./pages/Styleguide"));
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import CreateAdmin from "./pages/CreateAdmin";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import "./styles.css";
 
 const SHOW_STYLEGUIDE =
   import.meta.env.DEV || import.meta.env.VITE_SHOW_STYLEGUIDE === "true";
 
+import VendorCustomersPage from "./pages/Vendor/Customers";
+import NotificationsPage from "./pages/Notifications";
+import ProfilePage from "./pages/Profile";
 const routes: any[] = [
   {
     path: "/",
@@ -27,8 +33,21 @@ const routes: any[] = [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       {
+        element: <ProtectedAdminRoute />,
+        children: [{ path: "create-admin", element: <CreateAdmin /> }],
+      },
+      {
         element: <ProtectedRoute />,
-        children: [{ path: "dashboard", element: <Dashboard /> }],
+        children: [
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "vendor/customers", element: <VendorCustomersPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
+          { path: "profile", element: <ProfilePage /> },
+        ],
+      },
+      {
+        element: <ProtectedAdminRoute />,
+        children: [{ path: "admin", element: <AdminDashboard /> }],
       },
       { path: "*", element: <NotFound /> },
     ],

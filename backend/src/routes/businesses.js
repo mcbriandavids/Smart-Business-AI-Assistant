@@ -12,6 +12,54 @@ const router = express.Router();
 
 // (Haversine is now in the controller)
 
+// @desc    Get customers for a business sorted by patronage
+// @route   GET /api/businesses/customers/patronage
+// @access  Private (Business owner)
+router.get(
+  "/customers/patronage",
+  protect,
+  authorize("vendor", "admin"),
+  Controller.getCustomersByPatronage
+);
+// @desc    Get business content for owner
+// @route   GET /api/businesses/content
+// @access  Private (Business owner)
+router.get(
+  "/content",
+  protect,
+  authorize("vendor", "admin"),
+  Controller.getContent
+);
+
+// @desc    Update business content for owner
+// @route   PUT /api/businesses/content
+// @access  Private (Business owner)
+router.put(
+  "/content",
+  protect,
+  authorize("vendor", "admin"),
+  validate({
+    body: Joi.object({
+      name: Joi.string().min(2).max(100).optional(),
+      description: Joi.string().min(5).max(500).optional(),
+      category: Joi.string().optional(),
+      logo: Joi.string().uri().allow(null, "").optional(),
+      images: Joi.array()
+        .items(
+          Joi.object({
+            url: Joi.string().uri(),
+            caption: Joi.string().allow("", null),
+          })
+        )
+        .optional(),
+      contact: Joi.object().optional(),
+      address: Joi.object().optional(),
+      businessHours: Joi.object().optional(),
+    }),
+  }),
+  Controller.updateContent
+);
+
 // @desc    Register a new business
 // @route   POST /api/businesses
 // @access  Private (Vendor only)
