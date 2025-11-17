@@ -20,3 +20,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle 401 errors globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Remove token and redirect to login
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);

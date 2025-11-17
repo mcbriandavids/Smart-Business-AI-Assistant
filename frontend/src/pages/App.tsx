@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import AIAssistantPanel from "../components/AIAssistantPanel";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { isAuthenticated, logout as doLogout, getUser } from "../utils/auth";
 
@@ -58,6 +59,9 @@ export default function App() {
           </nav>
         </header>
       )}
+
+      {/* AI Assistant Panel */}
+      {!menuOpen && <AIAssistantPanel />}
       {/* Only show mobile modal on small screens */}
       {menuOpen && (
         <div className="modal-overlay-blur flex lg:hidden">

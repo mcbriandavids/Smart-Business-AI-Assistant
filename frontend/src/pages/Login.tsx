@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login as storeToken } from "../utils/auth";
+import { api } from "../api/client";
 
 export default function Login() {
   const nav = useNavigate();
@@ -13,19 +14,17 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error("Login failed");
-      const data = await res.json();
-      const token = data?.data?.token ?? data?.token;
+      const res = await api.post("/api/auth/login", { email, password });
+      const token = res.data?.data?.token ?? res.data?.token;
       if (!token) throw new Error("No token returned");
       storeToken(token);
       nav("/dashboard", { replace: true });
     } catch (err: any) {
-      setError(err?.message || "Login error");
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Login error. Please check your credentials and try again."
+      );
     }
   }
 

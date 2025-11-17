@@ -171,12 +171,36 @@ exports.register = async (req, res) => {
       name,
       description,
       category,
-      address,
+      address: rawAddress,
       contact,
       businessHours,
       services,
       paymentMethods,
     } = req.body;
+
+    // Deep sanitize address
+    let address = {};
+    if (rawAddress && typeof rawAddress === "object") {
+      address.street = rawAddress.street || "";
+      address.city = rawAddress.city || "";
+      address.state = rawAddress.state || "";
+      address.zipCode = rawAddress.zipCode || "";
+      address.country = rawAddress.country || "";
+      // Only include coordinates if both lat and lng are valid numbers
+      if (
+        rawAddress.coordinates &&
+        typeof rawAddress.coordinates === "object" &&
+        typeof rawAddress.coordinates.lat === "number" &&
+        !isNaN(rawAddress.coordinates.lat) &&
+        typeof rawAddress.coordinates.lng === "number" &&
+        !isNaN(rawAddress.coordinates.lng)
+      ) {
+        address.coordinates = {
+          lat: rawAddress.coordinates.lat,
+          lng: rawAddress.coordinates.lng,
+        };
+      }
+    }
 
     const existingBusiness = await Business.findOne({ owner: req.user.id });
     if (existingBusiness) {
@@ -186,23 +210,33 @@ exports.register = async (req, res) => {
       });
     }
 
-    const business = await Business.create({
-      owner: req.user.id,
-      name,
-      description,
-      category,
-      address,
-      contact,
-      businessHours,
-      services,
-      paymentMethods,
-    });
+    try {
+      const business = await Business.create({
+        owner: req.user.id,
+        name,
+        description,
+        category,
+        address,
+        contact,
+        businessHours,
+        services,
+        paymentMethods,
+      });
 
-    return res.status(201).json({
-      success: true,
-      message: "Business registered successfully",
-      data: { business },
-    });
+      return res.status(201).json({
+        success: true,
+        message: "Business registered successfully",
+        data: { business },
+      });
+    } catch (err) {
+      // Add debug logging for validation errors
+      console.error("[Business Registration Error]", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Validation error during business registration",
+        error: err.errors || err,
+      });
+    }
   } catch (error) {
     logger.error({ err: error }, "Business registration error");
     return res.status(500).json({

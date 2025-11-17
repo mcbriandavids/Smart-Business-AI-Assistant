@@ -164,8 +164,10 @@ function createApp() {
   app.use("/api/orders", orderRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/admin", adminRoutes);
+  app.use("/api/vendors", require("./routes/vendor"));
   app.use("/api/vendor-customers", vendorCustomerRoutes);
   app.use("/api/customers", require("./routes/customers"));
+  app.use("/api/ai", require("./routes/ai"));
   if (isTest && testRoutes) {
     app.use("/api/test", testRoutes);
   }

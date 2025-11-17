@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Box, TextField, Button } from "@mui/material";
-import { Customer } from "./CustomerTable";
-import { api } from "../api/client";
+import { Customer } from "../hooks/useCustomers";
 
 interface Props {
   initialData?: Customer;
-  onSuccess?: () => void;
+  onSuccess?: (data: Omit<Customer, "_id">) => void;
   onCancel?: () => void;
 }
 
@@ -17,25 +16,13 @@ const CustomerForm: React.FC<Props> = ({
   const [form, setForm] = useState<Partial<Customer>>(
     initialData || { name: "", email: "", phone: "", notes: "" }
   );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      if (form._id) {
-        await api.put(`/api/customers/${form._id}`, form as Customer);
-      } else {
-        await api.post("/api/customers", form as Customer);
-      }
+    if (onSuccess) {
+      const { _id, ...data } = form;
+      onSuccess(data as Omit<Customer, "_id">);
       setForm({ name: "", email: "", phone: "", notes: "" });
-      if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to save customer");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -44,55 +31,75 @@ const CustomerForm: React.FC<Props> = ({
   };
 
   return (
-    <Box component="form" display="flex" gap={2} onSubmit={handleSubmit}>
-      <TextField
-        label="Name"
-        name="name"
-        size="small"
-        value={form.name}
-        onChange={handleChange}
-        required
-      />
-      <TextField
-        label="Email"
-        name="email"
-        size="small"
-        value={form.email}
-        onChange={handleChange}
-      />
-      <TextField
-        label="Phone"
-        name="phone"
-        size="small"
-        value={form.phone}
-        onChange={handleChange}
-      />
-      <TextField
-        label="Notes"
-        name="notes"
-        size="small"
-        value={form.notes}
-        onChange={handleChange}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        type="submit"
-        disabled={loading}
+    <Box component="form" sx={{ width: "100%" }} onSubmit={handleSubmit}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+          gap: 2,
+        }}
       >
-        {loading ? "Saving..." : form._id ? "Update Customer" : "Add Customer"}
-      </Button>
-      {onCancel && (
+        <TextField
+          label="Name"
+          name="name"
+          size="small"
+          value={form.name}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Email"
+          name="email"
+          size="small"
+          value={form.email}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Phone"
+          name="phone"
+          size="small"
+          value={form.phone}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Notes"
+          name="notes"
+          size="small"
+          value={form.notes}
+          onChange={handleChange}
+          fullWidth
+        />
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          mt: 2,
+        }}
+      >
         <Button
-          variant="outlined"
-          color="secondary"
-          onClick={onCancel}
-          disabled={loading}
+          variant="contained"
+          color="primary"
+          type="submit"
+          fullWidth={true}
         >
-          Cancel
+          {form._id ? "Update Customer" : "Add Customer"}
         </Button>
-      )}
-      {error && <span style={{ color: "red" }}>{error}</span>}
+        {onCancel && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={onCancel}
+            fullWidth={true}
+          >
+            Cancel
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };

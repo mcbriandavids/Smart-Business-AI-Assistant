@@ -82,6 +82,14 @@ const userSchema = new mongoose.Schema(
       deliveryRadius: { type: Number, default: 10 }, // in kilometers
       language: { type: String, default: "en" },
     },
+    social: {
+      whatsapp: { type: String, default: "" },
+      facebook: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      website: { type: String, default: "" },
+    },
     isVerified: {
       type: Boolean,
       default: false,

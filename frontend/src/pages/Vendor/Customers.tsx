@@ -36,20 +36,61 @@ const VendorCustomersPage: React.FC = () => {
     }
   }
 
+  // State for editing
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  // Handler for edit
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+  };
+  // Handler for delete
+  const handleDelete = async (customer: Customer) => {
+    if (!customer._id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await api.delete(`/api/customers/${customer._id}`);
+      setSuccess("Customer deleted");
+      fetchCustomers();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to delete customer");
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Handler for cancel edit
+  const handleCancelEdit = () => {
+    setEditingCustomer(null);
+  };
+  // Handler for save edit
+  const handleSaveEdit = async () => {
+    setEditingCustomer(null);
+    fetchCustomers();
+    setSuccess("Customer updated");
+  };
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
         Customer Management
       </Typography>
-      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-        <CustomerForm onSuccess={fetchCustomers} />
-      </Paper>
+      {editingCustomer && (
+        <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+          <CustomerForm
+            initialData={editingCustomer}
+            onSuccess={handleSaveEdit}
+            onCancel={handleCancelEdit}
+          />
+        </Paper>
+      )}
       {loading ? (
         <Box display="flex" justifyContent="center" my={4}>
           <CircularProgress />
         </Box>
       ) : (
-        <CustomerTable customers={customers} />
+        <CustomerTable
+          customers={customers}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
       <MessageDialog />
       <Snackbar
