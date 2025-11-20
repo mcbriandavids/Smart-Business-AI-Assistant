@@ -1,73 +1,100 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Paper,
-  Box,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-} from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import PersonIcon from "@mui/icons-material/Person";
 
-export default function DashboardSidebar() {
+interface DashboardSidebarProps {
+  customerCount: number;
+  hasBusinessProfile: boolean;
+}
+
+const iconProps = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const peopleIcon = (
+  <svg {...iconProps}>
+    <path d="M17 21v-2a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3v2" />
+    <circle cx="12" cy="8" r="3" />
+    <path d="M21 21v-2a3 3 0 0 0-2-2.82" />
+    <path d="M5 16.18A3 3 0 0 0 3 19v2" />
+    <path d="M19 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+    <path d="M9 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+  </svg>
+);
+
+const briefcaseIcon = (
+  <svg {...iconProps}>
+    <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    <path d="M3 13h18" />
+  </svg>
+);
+
+export default function DashboardSidebar({
+  customerCount,
+  hasBusinessProfile,
+}: DashboardSidebarProps) {
   const navigate = useNavigate();
 
   return (
-    <Paper
-      elevation={2}
-      sx={{
-        width: { xs: "100%", md: 220 },
-        minHeight: { xs: "auto", md: "100vh" },
-        borderRadius: 0,
-        bgcolor: (theme) => theme.palette.background.paper,
-        p: 0,
-        display: { xs: "none", md: "flex" },
-        flexDirection: "column",
-        position: { xs: "static", md: "relative" },
-        borderRight: (theme) => `1px solid ${theme.palette.divider}`,
-      }}
-    >
-      <Box
-        sx={{
-          p: 3,
-          pb: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-        }}
-      >
-        <DashboardIcon color="primary" sx={{ fontSize: 32 }} />
-        <Typography variant="h6" fontWeight={900} color="primary.dark">
-          {/* cSpell:disable */}
-          Dashboard
-          {/* cSpell:enable */}
-        </Typography>
-      </Box>
-      <List>
-        <ListItemButton selected>
-          <ListItemIcon>
-            <PeopleIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText primary="Customers" />
-        </ListItemButton>
-        <ListItemButton>
-          <ListItemIcon>
-            <ShoppingCartIcon color="action" />
-          </ListItemIcon>
-          <ListItemText primary="Products" />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate("/profile")}>
-          <ListItemIcon>
-            <PersonIcon color="action" />
-          </ListItemIcon>
-          <ListItemText primary="Profile" />
-        </ListItemButton>
-      </List>
-    </Paper>
+    <aside className="dashboard-sidebar">
+      <section className="glass-panel">
+        <div className="panel-eyebrow">At a glance</div>
+        <h3 className="panel-title" style={{ marginBottom: 8 }}>
+          Key metrics
+        </h3>
+        <div className="dashboard-metrics">
+          <div className="dashboard-metric">
+            <div className="dashboard-metric__icon">{peopleIcon}</div>
+            <div>
+              <p className="dashboard-metric__label">Customers</p>
+              <p className="dashboard-metric__value">{customerCount}</p>
+            </div>
+          </div>
+          <div className="dashboard-metric">
+            <div className="dashboard-metric__icon">{briefcaseIcon}</div>
+            <div>
+              <p className="dashboard-metric__label">Business profile</p>
+              <p className="dashboard-metric__value">
+                {hasBusinessProfile ? "Complete" : "Setup pending"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="glass-panel">
+        <div className="panel-eyebrow">Quick actions</div>
+        <div className="dashboard-actions">
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
+            onClick={() => navigate("/vendor/customers")}
+          >
+            Open customer hub
+          </button>
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
+            onClick={() => navigate("/profile")}
+          >
+            Edit profile
+          </button>
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
+            onClick={() => navigate("/notifications")}
+          >
+            View notifications
+          </button>
+        </div>
+      </section>
+    </aside>
   );
 }

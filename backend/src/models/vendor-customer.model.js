@@ -26,9 +26,26 @@ const vendorCustomerSchema = new mongoose.Schema(
         country: String,
       },
     },
-    tags: [String],
-    notes: String,
+    tags: { type: [String], default: [] },
+    notes: { type: String, default: "" },
+    lifecycleStage: {
+      type: String,
+      enum: ["lead", "prospect", "customer", "vip", "churn_risk"],
+      default: "lead",
+    },
+    preferredChannel: {
+      type: String,
+      enum: ["sms", "email", "in_app", "whatsapp"],
+      default: "in_app",
+    },
     consentToContact: { type: Boolean, default: true },
+    lastInteractionAt: Date,
+    metrics: {
+      totalOrders: { type: Number, default: 0 },
+      totalRevenue: { type: Number, default: 0 },
+      messagesSent: { type: Number, default: 0 },
+      responsesReceived: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );

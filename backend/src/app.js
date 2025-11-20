@@ -168,6 +168,7 @@ function createApp() {
   app.use("/api/vendor-customers", vendorCustomerRoutes);
   app.use("/api/customers", require("./routes/customers"));
   app.use("/api/ai", require("./routes/ai"));
+  app.use("/api/agent-sessions", require("./routes/agent"));
   if (isTest && testRoutes) {
     app.use("/api/test", testRoutes);
   }

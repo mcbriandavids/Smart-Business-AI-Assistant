@@ -1,10 +1,4 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  DialogActions,
-} from "@mui/material";
 import { api } from "../api/client";
 
 // cSpell:disable LGA Topbar
@@ -184,200 +178,305 @@ export default function CreateBusinessForm({
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-    >
-      <TextField
-        label="Business Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-        fullWidth
-      />
-      <TextField
-        label="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        required
-        fullWidth
-        multiline
-        minRows={2}
-      />
-      <TextField
-        select
-        label="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        required
-        fullWidth
-        slotProps={{ select: { native: true } }}
-      >
-        <option value="">Select category</option>
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat.replace(/_/g, " ")}
-          </option>
-        ))}
-      </TextField>
-      <TextField
-        label="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        fullWidth
-        type="email"
-      />
-      <TextField
-        label="Phone"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        required
-        fullWidth
-      />
-      <TextField
-        label="Website"
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Street Address"
-        value={street}
-        onChange={(e) => setStreet(e.target.value)}
-        required
-        fullWidth
-      />
-      <TextField
-        label="City"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-        required
-        fullWidth
-      />
-      <TextField
-        select
-        label="State"
-        value={state || ""}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setState(e.target.value);
-          setLga("");
-        }}
-        required
-        fullWidth
-        slotProps={{ select: { native: true } }}
-      >
-        <option value="">Select state</option>
-        {nigeriaStates.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </TextField>
-
-      {state && nigeriaLgas[state] && (
-        <TextField
-          select
-          label="Local Government Area (LGA)"
-          value={lga}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setLga(e.target.value)
-          }
+    <form className="stack stack--tight" onSubmit={handleSubmit}>
+      <div className="form-field">
+        <label className="form-label" htmlFor="business-name">
+          Business name
+        </label>
+        <input
+          id="business-name"
+          className="form-input"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
           required
-          fullWidth
-          slotProps={{ select: { native: true } }}
+          placeholder="Acme Foods"
+        />
+      </div>
+
+      <div className="form-field">
+        <label className="form-label" htmlFor="business-description">
+          Description
+        </label>
+        <textarea
+          id="business-description"
+          className="form-input form-textarea"
+          minLength={20}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          required
+          placeholder="Introduce the products and services you offer."
+        />
+      </div>
+
+      <div className="form-field">
+        <label className="form-label" htmlFor="business-category">
+          Category
+        </label>
+        <select
+          id="business-category"
+          className="form-input"
+          value={category}
+          onChange={(event) => setCategory(event.target.value)}
+          required
         >
-          <option value="">Select LGA</option>
-          {nigeriaLgas[state].map((l: string) => (
-            <option key={l} value={l}>
-              {l}
+          <option value="">Select category</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat.replace(/_/g, " ")}
             </option>
           ))}
-        </TextField>
-      )}
+        </select>
+      </div>
 
-      <TextField
-        label="Zip Code"
-        value={zipCode}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setZipCode(e.target.value)
-        }
-        required
-        fullWidth
-      />
-      <TextField
-        select
-        label="Country"
-        value={country}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setCountry(e.target.value)
-        }
-        required
-        fullWidth
-        disabled
-        slotProps={{ select: { native: true } }}
-      >
-        <option value="Nigeria">Nigeria</option>
-      </TextField>
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="business-email">
+            Email
+          </label>
+          <input
+            id="business-email"
+            type="email"
+            className="form-input"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            placeholder="hello@business.com"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="business-phone">
+            Phone
+          </label>
+          <input
+            id="business-phone"
+            className="form-input"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            required
+            placeholder="(555) 555-5555"
+          />
+        </div>
+      </div>
 
-      <TextField
-        label="Latitude"
-        value={lat}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setLat(e.target.value)
-        }
-        required
-        fullWidth
-        type="number"
-      />
-      <TextField
-        label="Longitude"
-        value={lng}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setLng(e.target.value)
-        }
-        required
-        fullWidth
-        type="number"
-      />
-      <TextField
-        label="Facebook"
-        value={facebook}
-        onChange={(e) => setFacebook(e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Twitter"
-        value={twitter}
-        onChange={(e) => setTwitter(e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Instagram"
-        value={instagram}
-        onChange={(e) => setInstagram(e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="LinkedIn"
-        value={linkedin}
-        onChange={(e) => setLinkedin(e.target.value)}
-        fullWidth
-      />
-      <DialogActions>
-        <Button onClick={onCancel} disabled={saving}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
+      <div className="form-field">
+        <label className="form-label" htmlFor="business-website">
+          Website
+        </label>
+        <input
+          id="business-website"
+          className="form-input"
+          value={website}
+          onChange={(event) => setWebsite(event.target.value)}
+          placeholder="https://"
+        />
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-street">
+            Street address
+          </label>
+          <input
+            id="address-street"
+            className="form-input"
+            value={street}
+            onChange={(event) => setStreet(event.target.value)}
+            required
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-city">
+            City
+          </label>
+          <input
+            id="address-city"
+            className="form-input"
+            value={city}
+            onChange={(event) => setCity(event.target.value)}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-state">
+            State
+          </label>
+          <select
+            id="address-state"
+            className="form-input"
+            value={state || ""}
+            onChange={(event) => {
+              setState(event.target.value);
+              setLga("");
+            }}
+            required
+          >
+            <option value="">Select state</option>
+            {nigeriaStates.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-lga">
+            Local Government Area
+          </label>
+          <select
+            id="address-lga"
+            className="form-input"
+            value={lga}
+            onChange={(event) => setLga(event.target.value)}
+            required={Boolean(state && nigeriaLgas[state])}
+            disabled={!state || !nigeriaLgas[state]}
+          >
+            <option value="">Select LGA</option>
+            {state && nigeriaLgas[state]
+              ? nigeriaLgas[state].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))
+              : null}
+          </select>
+        </div>
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-zip">
+            Zip code
+          </label>
+          <input
+            id="address-zip"
+            className="form-input"
+            value={zipCode}
+            onChange={(event) => setZipCode(event.target.value)}
+            required
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="address-country">
+            Country
+          </label>
+          <select
+            id="address-country"
+            className="form-input"
+            value={country}
+            onChange={(event) => setCountry(event.target.value)}
+            required
+            disabled
+          >
+            <option value="Nigeria">Nigeria</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="geo-lat">
+            Latitude
+          </label>
+          <input
+            id="geo-lat"
+            type="number"
+            className="form-input"
+            value={lat}
+            onChange={(event) => setLat(event.target.value)}
+            required
+            step="0.000001"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="geo-lng">
+            Longitude
+          </label>
+          <input
+            id="geo-lng"
+            type="number"
+            className="form-input"
+            value={lng}
+            onChange={(event) => setLng(event.target.value)}
+            required
+            step="0.000001"
+          />
+        </div>
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="social-facebook">
+            Facebook
+          </label>
+          <input
+            id="social-facebook"
+            className="form-input"
+            value={facebook}
+            onChange={(event) => setFacebook(event.target.value)}
+            placeholder="https://facebook.com/"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="social-twitter">
+            Twitter
+          </label>
+          <input
+            id="social-twitter"
+            className="form-input"
+            value={twitter}
+            onChange={(event) => setTwitter(event.target.value)}
+            placeholder="https://x.com/"
+          />
+        </div>
+      </div>
+
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="social-instagram">
+            Instagram
+          </label>
+          <input
+            id="social-instagram"
+            className="form-input"
+            value={instagram}
+            onChange={(event) => setInstagram(event.target.value)}
+            placeholder="https://instagram.com/"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="social-linkedin">
+            LinkedIn
+          </label>
+          <input
+            id="social-linkedin"
+            className="form-input"
+            value={linkedin}
+            onChange={(event) => setLinkedin(event.target.value)}
+            placeholder="https://linkedin.com/company/"
+          />
+        </div>
+      </div>
+
+      <div className="form-actions">
+        <button
+          type="button"
+          className="vendor-button vendor-button--ghost"
+          onClick={onCancel}
           disabled={saving}
         >
-          {saving ? "Creating..." : "Create Business"}
-        </Button>
-      </DialogActions>
-    </Box>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="vendor-button vendor-button--primary"
+          disabled={saving}
+        >
+          {saving ? "Creating…" : "Create business"}
+        </button>
+      </div>
+    </form>
   );
 }

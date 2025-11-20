@@ -16,8 +16,9 @@ export default function Login() {
     try {
       const res = await api.post("/api/auth/login", { email, password });
       const token = res.data?.data?.token ?? res.data?.token;
+      const user = res.data?.data?.user ?? res.data?.user;
       if (!token) throw new Error("No token returned");
-      storeToken(token);
+      storeToken(token, user);
       nav("/dashboard", { replace: true });
     } catch (err: any) {
       setError(

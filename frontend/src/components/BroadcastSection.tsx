@@ -1,11 +1,4 @@
 import React from "react";
-import {
-  Paper,
-  Typography,
-  Box,
-  TextField,
-  Button,
-} from "@mui/material";
 
 interface BroadcastSectionProps {
   broadcastMsg: string;
@@ -23,51 +16,59 @@ export default function BroadcastSection({
   onSendBroadcast,
 }: BroadcastSectionProps) {
   return (
-    <Paper
-      elevation={1}
-      sx={{
-        borderRadius: 4,
-        p: { xs: 2, sm: 3 },
-        bgcolor: (theme) => theme.palette.background.paper,
-        mb: 4,
-        boxShadow: (theme) => theme.shadows[1],
-      }}
-    >
-      <Typography variant="h6" fontWeight={800} mb={1}>
-        Message All Customers
-      </Typography>
-      <Box display="flex" gap={2} alignItems="center">
-        <TextField
-          multiline
-          minRows={1}
-          maxRows={4}
-          fullWidth
-          placeholder="Type your message..."
+    <section className="glass-panel">
+      <div className="panel-header">
+        <div>
+          <div className="panel-eyebrow">Broadcasts</div>
+          <h3 className="panel-title">Message all customers</h3>
+          <p className="panel-subtitle">
+            Send an announcement to every customer inbox. Keep it concise—your
+            latest message is highlighted below.
+          </p>
+        </div>
+        <div className="panel-actions">
+          <button
+            type="button"
+            className="vendor-button vendor-button--primary"
+            onClick={onSendBroadcast}
+            disabled={broadcasting || !broadcastMsg.trim()}
+          >
+            {broadcasting ? "Sending…" : "Send broadcast"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-field">
+        <label className="form-label" htmlFor="broadcast-message">
+          Message content
+        </label>
+        <textarea
+          id="broadcast-message"
+          className="form-input form-textarea"
+          minLength={10}
+          placeholder="Type your message…"
           value={broadcastMsg}
-          onChange={(e) => setBroadcastMsg(e.target.value)}
+          onChange={(event) => setBroadcastMsg(event.target.value)}
           disabled={broadcasting}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={broadcasting || !broadcastMsg.trim()}
-          onClick={onSendBroadcast}
-        >
-          {broadcasting ? "Sending..." : "Send"}
-        </Button>
-      </Box>
-      {broadcastSuccess && (
-        <Typography
-          mt={1}
-          color={
-            broadcastSuccess.startsWith("Message")
-              ? "success.main"
-              : "error"
-          }
+        <span className="form-helper">
+          {broadcasting
+            ? "Sending to all customers…"
+            : "Make it actionable and under 280 characters."}
+        </span>
+      </div>
+
+      {broadcastSuccess ? (
+        <div
+          className={`callout ${
+            broadcastSuccess.toLowerCase().includes("failed")
+              ? "callout--error"
+              : "callout--success"
+          }`}
         >
           {broadcastSuccess}
-        </Typography>
-      )}
-    </Paper>
+        </div>
+      ) : null}
+    </section>
   );
 }

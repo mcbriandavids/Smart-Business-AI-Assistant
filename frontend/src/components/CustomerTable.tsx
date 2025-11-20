@@ -1,212 +1,166 @@
 import React from "react";
-import {
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-
-export interface Customer {
-  _id?: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  notes?: string;
-}
+import { Customer } from "../hooks/useCustomers";
 
 interface Props {
   customers: Customer[];
   onEdit?: (customer: Customer) => void;
   onDelete?: (customer: Customer) => void;
   onMessage?: (customer: Customer) => void;
+  onSelect?: (customer: Customer) => void;
+  selectedCustomerId?: string | null;
 }
+
+const formatStatusLabel = (value: string) =>
+  value
+    .replace(/_/g, " ")
+    .split(" ")
+    .map((segment) =>
+      segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : ""
+    )
+    .join(" ");
 
 const CustomerTable: React.FC<Props> = ({
   customers,
   onEdit,
   onDelete,
   onMessage,
+  onSelect,
+  selectedCustomerId,
 }) => {
   if (!customers || customers.length === 0) {
     return (
-      <TableContainer
-        component={Paper}
-        sx={{
-          width: "100%",
-          overflowX: "auto",
-          boxShadow: { xs: 0, sm: 2 },
-          borderRadius: { xs: 0, sm: 2 },
-        }}
-      >
-        <Table sx={{ minWidth: 500 }}>
-          <TableBody>
-            <TableRow>
-              <TableCell colSpan={5} align="center">
-                No customers yet.
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <div className="empty-state">
+        <strong>No customers yet</strong>
+        <p style={{ margin: "6px 0 0" }}>
+          Add a customer to start tracking conversations and actions.
+        </p>
+      </div>
     );
   }
+
   return (
-    <TableContainer
-      component={Paper}
-      sx={{
-        width: "100%",
-        overflowX: "auto",
-        boxShadow: { xs: 0, sm: 2 },
-        borderRadius: { xs: 0, sm: 2 },
-      }}
-    >
-      <Table
-        sx={{
-          minWidth: 500,
-          borderCollapse: "collapse",
-          "& th, & td": {
-            border: "1px solid #d3d3d3",
-            padding: "8px",
-          },
-        }}
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell
-              sx={{
-                fontWeight: 700,
-                minWidth: 120,
-                bgcolor: "#f3f6fb",
-                border: "1px solid #b0b0b0",
-                textAlign: "center",
-              }}
-            >
-              Name
-            </TableCell>
-            <TableCell
-              sx={{
-                minWidth: 160,
-                bgcolor: "#f3f6fb",
-                border: "1px solid #b0b0b0",
-                textAlign: "center",
-                fontWeight: 700,
-              }}
-            >
-              Email
-            </TableCell>
-            <TableCell
-              sx={{
-                minWidth: 120,
-                bgcolor: "#f3f6fb",
-                border: "1px solid #b0b0b0",
-                textAlign: "center",
-                fontWeight: 700,
-              }}
-            >
-              Phone
-            </TableCell>
-            <TableCell
-              sx={{
-                minWidth: 120,
-                bgcolor: "#f3f6fb",
-                border: "1px solid #b0b0b0",
-                textAlign: "center",
-                fontWeight: 700,
-              }}
-            >
-              Notes
-            </TableCell>
-            <TableCell
-              sx={{
-                minWidth: 100,
-                bgcolor: "#f3f6fb",
-                border: "1px solid #b0b0b0",
-                textAlign: "center",
-                fontWeight: 700,
-              }}
-            >
-              Actions
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {customers.map((customer) => (
-            <TableRow
-              key={customer._id}
-              sx={{
-                "&:hover": {
-                  backgroundColor: "#eaf1fb",
-                },
-              }}
-            >
-              <TableCell
-                sx={{
-                  wordBreak: "break-word",
-                  textAlign: "center",
-                  border: "1px solid #d3d3d3",
-                }}
-              >
-                {customer.name}
-              </TableCell>
-              <TableCell
-                sx={{
-                  wordBreak: "break-word",
-                  textAlign: "center",
-                  border: "1px solid #d3d3d3",
-                }}
-              >
-                {customer.email}
-              </TableCell>
-              <TableCell
-                sx={{
-                  wordBreak: "break-word",
-                  textAlign: "center",
-                  border: "1px solid #d3d3d3",
-                }}
-              >
-                {customer.phone}
-              </TableCell>
-              <TableCell
-                sx={{
-                  wordBreak: "break-word",
-                  textAlign: "center",
-                  border: "1px solid #d3d3d3",
-                }}
-              >
-                {customer.notes}
-              </TableCell>
-              <TableCell
-                sx={{ textAlign: "center", border: "1px solid #d3d3d3" }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={() => onEdit && onEdit(customer)}
-                  sx={{ mx: { xs: 0.5, sm: 1 } }}
-                  aria-label="edit"
+    <div className="table-card">
+      <div className="table-card__scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Notes</th>
+              {(onEdit || onDelete || onMessage) && (
+                <th scope="col" className="table-card__actions-heading">
+                  Actions
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map((customer) => {
+              const customerId =
+                customer._id ?? customer.email ?? customer.name;
+              const isSelected = customer._id
+                ? selectedCustomerId === customer._id
+                : false;
+              const rowClassNames = [
+                onSelect ? "table-card__row--interactive" : "",
+                isSelected ? "is-selected" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
+              const statusLabel = customer.status
+                ? formatStatusLabel(customer.status)
+                : "";
+              const notePreview = customer.notes
+                ? customer.notes.length > 80
+                  ? `${customer.notes.slice(0, 77)}…`
+                  : customer.notes
+                : "";
+              const metaLabel = statusLabel || notePreview;
+
+              return (
+                <tr
+                  key={customerId}
+                  className={rowClassNames || undefined}
+                  onClick={() => (onSelect ? onSelect(customer) : undefined)}
+                  aria-selected={isSelected}
+                  tabIndex={onSelect ? 0 : undefined}
+                  onKeyDown={(event) => {
+                    if (!onSelect) {
+                      return;
+                    }
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect(customer);
+                    }
+                  }}
                 >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => onDelete && onDelete(customer)}
-                  sx={{ mx: { xs: 0.5, sm: 1 } }}
-                  aria-label="delete"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                  <td>
+                    <div className="table-card__primary">
+                      <span className="table-card__name">
+                        {customer.name || "Unnamed"}
+                      </span>
+                      {metaLabel ? (
+                        <span className="table-card__meta">{metaLabel}</span>
+                      ) : null}
+                    </div>
+                  </td>
+                  <td className="table-card__cell--muted">
+                    {customer.email || "—"}
+                  </td>
+                  <td className="table-card__cell--muted">
+                    {customer.phone || "—"}
+                  </td>
+                  <td className="table-card__notes">
+                    {customer.notes ? customer.notes : "—"}
+                  </td>
+                  {(onEdit || onDelete || onMessage) && (
+                    <td className="table-card__actions">
+                      {onMessage ? (
+                        <button
+                          type="button"
+                          className="vendor-button vendor-button--ghost vendor-button--compact"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onMessage?.(customer);
+                          }}
+                        >
+                          Message
+                        </button>
+                      ) : null}
+                      {onEdit ? (
+                        <button
+                          type="button"
+                          className="vendor-button vendor-button--ghost vendor-button--compact"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onEdit?.(customer);
+                          }}
+                        >
+                          Edit
+                        </button>
+                      ) : null}
+                      {onDelete ? (
+                        <button
+                          type="button"
+                          className="vendor-button vendor-button--danger vendor-button--compact"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onDelete?.(customer);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      ) : null}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

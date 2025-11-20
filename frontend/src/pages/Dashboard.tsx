@@ -1,17 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Typography,
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Snackbar,
-  Alert,
-  Avatar,
-} from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 
 // Custom hooks
 import { useAuth } from "../hooks/useAuth";
@@ -27,11 +14,11 @@ import BusinessContentSection from "../components/BusinessContentSection";
 import CustomersSection from "../components/CustomersSection";
 import CreateBusinessForm from "../components/CreateBusinessForm";
 import BroadcastDeliveryList from "../components/BroadcastDeliveryList";
+import Modal from "../components/Modal";
 
 // cSpell:disable LGA Topbar
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [search, setSearch] = useState<string>("");
   const [showBusinessModal, setShowBusinessModal] = useState<boolean>(false);
   const [snackbar, setSnackbar] = useState<{
@@ -45,7 +32,12 @@ export default function Dashboard() {
   });
 
   // Custom hooks
-  const { me, loading: authLoading, error: authError, refetch: refetchAuth } = useAuth();
+  const {
+    me,
+    loading: authLoading,
+    error: authError,
+    refetch: refetchAuth,
+  } = useAuth();
   const {
     businessContent,
     setBusinessContent,
@@ -87,7 +79,8 @@ export default function Dashboard() {
     if (
       (me?.data?.user?.role === "vendor" || me?.data?.user?.role === "owner") &&
       (!businessContent || businessContent.trim() === "") &&
-      (businessError === "No business found" || businessError === "Business not found")
+      (businessError === "No business found" ||
+        businessError === "Business not found")
     ) {
       setShowBusinessModal(true);
     } else {
@@ -113,68 +106,100 @@ export default function Dashboard() {
   }, []);
 
   // Handlers
-  const handleAddCustomer = useCallback(async (customerData: Omit<Customer, '_id'>) => {
-    try {
-      await addCustomer(customerData);
-      setSnackbar({ open: true, message: "Customer added", severity: "success" });
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.response?.data?.message || "Failed to add customer",
-        severity: "error",
-      });
-    }
-  }, [addCustomer]);
+  const handleAddCustomer = useCallback(
+    async (customerData: Omit<Customer, "_id">) => {
+      try {
+        await addCustomer(customerData);
+        setSnackbar({
+          open: true,
+          message: "Customer added",
+          severity: "success",
+        });
+      } catch (err: any) {
+        setSnackbar({
+          open: true,
+          message: err?.response?.data?.message || "Failed to add customer",
+          severity: "error",
+        });
+      }
+    },
+    [addCustomer]
+  );
 
-  const handleEditCustomer = useCallback(async (customer: Customer) => {
-    try {
-      await updateCustomer(customer._id!, {
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        notes: customer.notes,
-      });
-      setSnackbar({ open: true, message: "Customer updated", severity: "success" });
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.response?.data?.message || "Failed to update customer",
-        severity: "error",
-      });
-    }
-  }, [updateCustomer]);
+  const handleEditCustomer = useCallback(
+    async (customer: Customer) => {
+      try {
+        await updateCustomer(customer._id!, {
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          notes: customer.notes,
+        });
+        setSnackbar({
+          open: true,
+          message: "Customer updated",
+          severity: "success",
+        });
+      } catch (err: any) {
+        setSnackbar({
+          open: true,
+          message: err?.response?.data?.message || "Failed to update customer",
+          severity: "error",
+        });
+      }
+    },
+    [updateCustomer]
+  );
 
-  const handleDeleteCustomer = useCallback(async (customer: Customer) => {
-    if (!window.confirm(`Delete customer ${customer.name || ""}?`)) return;
-    try {
-      await deleteCustomer(customer._id!);
-      setSnackbar({ open: true, message: "Customer deleted", severity: "success" });
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.response?.data?.message || "Delete failed",
-        severity: "error",
-      });
-    }
-  }, [deleteCustomer]);
+  const handleDeleteCustomer = useCallback(
+    async (customer: Customer) => {
+      if (!window.confirm(`Delete customer ${customer.name || ""}?`)) return;
+      try {
+        await deleteCustomer(customer._id!);
+        setSnackbar({
+          open: true,
+          message: "Customer deleted",
+          severity: "success",
+        });
+      } catch (err: any) {
+        setSnackbar({
+          open: true,
+          message: err?.response?.data?.message || "Delete failed",
+          severity: "error",
+        });
+      }
+    },
+    [deleteCustomer]
+  );
 
-  const handleMessageCustomer = useCallback(async (customer: Customer, content: string) => {
-    try {
-      await sendMessage(customer._id!, content);
-      setSnackbar({ open: true, message: "Message sent", severity: "success" });
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err?.response?.data?.message || "Message failed",
-        severity: "error",
-      });
-    }
-  }, [sendMessage]);
+  const handleMessageCustomer = useCallback(
+    async (customer: Customer, content: string) => {
+      try {
+        await sendMessage(customer._id!, content);
+        setSnackbar({
+          open: true,
+          message: "Message sent",
+          severity: "success",
+        });
+      } catch (err: any) {
+        setSnackbar({
+          open: true,
+          message: err?.response?.data?.message || "Message failed",
+          severity: "error",
+        });
+      }
+    },
+    [sendMessage]
+  );
 
   const handleSaveBusinessContent = useCallback(async () => {
     try {
       await saveBusinessContent(businessContent);
-      setSnackbar({ open: true, message: "Business content saved", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Business content saved",
+        severity: "success",
+      });
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -191,137 +216,117 @@ export default function Dashboard() {
     fetchCustomers();
   }, [refetchAuth, fetchBusinessContent, fetchCustomers]);
 
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: (theme) =>
-          `linear-gradient(135deg, ${theme.palette.grey[100]} 0%, ${theme.palette.grey[200]} 100%)`,
-        display: { xs: "block", md: "flex" },
-      }}
-    >
-      {/* Sidebar */}
-      <DashboardSidebar />
+  useEffect(() => {
+    if (!snackbar.open) {
+      return;
+    }
 
-      {/* Mobile Top Nav */}
-      <Box
-        sx={{
-          display: { xs: "flex", md: "none" },
-          width: "100%",
-          bgcolor: (theme) => theme.palette.background.paper,
-          p: 1,
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={1}>
-          <DashboardIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h6" fontWeight={900} color="primary.dark">
-            Dashboard
-          </Typography>
-        </Box>
-        <Avatar
-          sx={{
-            bgcolor: "primary.main",
-            width: 36,
-            height: 36,
-            fontWeight: 700,
+    const timeout = window.setTimeout(() => {
+      setSnackbar((prev) => ({ ...prev, open: false }));
+    }, 4000);
+
+    return () => window.clearTimeout(timeout);
+  }, [snackbar.open]);
+
+  return (
+    <div className="stack stack--loose">
+      {snackbar.open ? (
+        <div
+          className={`callout ${
+            snackbar.severity === "success"
+              ? "callout--success"
+              : "callout--error"
+          }`}
+          role={snackbar.severity === "success" ? "status" : "alert"}
+          aria-live={snackbar.severity === "success" ? "polite" : "assertive"}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
           }}
         >
-          {me?.data?.user?.firstName?.[0] || <PersonIcon />}
-        </Avatar>
-      </Box>
+          <span>{snackbar.message}</span>
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost vendor-button--compact"
+            onClick={() => setSnackbar({ ...snackbar, open: false })}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
 
-      {/* Main Content */}
-      <Box
-        sx={{
-          flex: 1,
-          p: { xs: 1, sm: 2, md: 4 },
-          pl: { md: 6 },
-          pr: { md: 6 },
-          bgcolor: (theme) => theme.palette.grey[50],
-        }}
-      >
-        {/* Topbar */}
-        <DashboardTopbar
-          me={me}
-          search={search}
-          onSearchChange={setSearch}
-        />
+      <DashboardTopbar me={me} search={search} onSearchChange={setSearch} />
 
-        {/* Broadcast Section */}
-        {me?.data?.user?.role === "vendor" && (
-          <BroadcastSection
-            broadcastMsg={broadcastMsg}
-            setBroadcastMsg={setBroadcastMsg}
-            broadcasting={broadcasting}
-            broadcastSuccess={broadcastSuccess}
-            onSendBroadcast={sendBroadcast}
-          />
-        )}
-
-        {/* Editable Business Content */}
-        {me?.data?.user?.role === "vendor" && businessContent && (
-          <BusinessContentSection
-            businessContent={businessContent}
-            setBusinessContent={setBusinessContent}
-            saving={businessSaving}
-            onSave={handleSaveBusinessContent}
-          />
-        )}
-
-        {/* Business Creation Modal */}
-        <Dialog
-          open={showBusinessModal}
-          onClose={() => {}}
-          disableEscapeKeyDown
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Create Your Business</DialogTitle>
-          <DialogContent>
-            <Typography mb={2} color="text.secondary">
-              To use the dashboard, you must first create your business profile.
-            </Typography>
-            <CreateBusinessForm
-              onSuccess={handleBusinessCreated}
-              onCancel={() => setShowBusinessModal(false)}
+      <div className="layout-grid layout-grid--two">
+        <div className="stack stack--loose">
+          {me?.data?.user?.role === "vendor" ? (
+            <BroadcastSection
+              broadcastMsg={broadcastMsg}
+              setBroadcastMsg={setBroadcastMsg}
+              broadcasting={broadcasting}
+              broadcastSuccess={broadcastSuccess}
+              onSendBroadcast={sendBroadcast}
             />
-          </DialogContent>
-        </Dialog>
+          ) : null}
 
-        {/* Customers Management Section */}
-        <CustomersSection
-          customers={customers}
-          onAddCustomer={handleAddCustomer}
-          onEditCustomer={handleEditCustomer}
-          onDeleteCustomer={handleDeleteCustomer}
-          onMessageCustomer={handleMessageCustomer}
-          search={search}
-        />
+          {me?.data?.user?.role === "vendor" && businessContent ? (
+            <BusinessContentSection
+              businessContent={businessContent}
+              setBusinessContent={setBusinessContent}
+              saving={businessSaving}
+              onSave={handleSaveBusinessContent}
+            />
+          ) : null}
 
-        {/* Broadcast Delivery Status */}
-        <BroadcastDeliveryList />
+          <CustomersSection
+            customers={customers}
+            onAddCustomer={handleAddCustomer}
+            onEditCustomer={handleEditCustomer}
+            onDeleteCustomer={handleDeleteCustomer}
+            onMessageCustomer={handleMessageCustomer}
+            search={search}
+          />
+        </div>
 
-        {/* Snackbar for feedback */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={4000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        <div className="stack stack--loose">
+          <DashboardSidebar
+            customerCount={customers.length}
+            hasBusinessProfile={Boolean(businessContent)}
+          />
+          <BroadcastDeliveryList />
+        </div>
+      </div>
+
+      {authLoading ? (
+        <div className="callout" style={{ alignSelf: "flex-start" }}>
+          <span className="assistant-spinner" style={{ marginRight: 12 }} />{" "}
+          Loading profile…
+        </div>
+      ) : null}
+
+      {authError ? (
+        <div
+          className="callout callout--error"
+          style={{ alignSelf: "flex-start" }}
         >
-          <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
+          {authError}
+        </div>
+      ) : null}
 
-        {authLoading && <Typography mt={2}>Loading profile…</Typography>}
-        {authError && (
-          <Typography color="error" fontWeight={600} mt={2}>
-            {authError}
-          </Typography>
-        )}
-      </Box>
-    </Box>
+      <Modal
+        open={showBusinessModal}
+        onClose={() => setShowBusinessModal(false)}
+        title="Create your business"
+        description="Set up your business profile to unlock broadcasts, customer messaging, and analytics."
+        size="lg"
+      >
+        <CreateBusinessForm
+          onSuccess={handleBusinessCreated}
+          onCancel={() => setShowBusinessModal(false)}
+        />
+      </Modal>
+    </div>
   );
 }

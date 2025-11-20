@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api/client";
-import {
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-  CircularProgress,
-  Box,
-  Chip,
-  Paper,
-  Button,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 interface Notification {
@@ -44,86 +33,93 @@ const BroadcastDeliveryList: React.FC = () => {
   }
 
   return (
-    <Paper
-      sx={{ p: 2, mt: 4, bgcolor: (theme) => theme.palette.background.default }}
-    >
-      <Typography variant="h6" gutterBottom>
-        Broadcast Delivery Status
-      </Typography>
+    <section className="glass-panel">
+      <div className="panel-header">
+        <div>
+          <div className="panel-eyebrow">Broadcasts</div>
+          <h3 className="panel-title">Delivery status</h3>
+          <p className="panel-subtitle">
+            Track how broadcast messages land across your customer base.
+          </p>
+        </div>
+        <div className="panel-actions">
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
+            onClick={fetchNotifications}
+            disabled={loading}
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
       {loading ? (
-        <Box display="flex" justifyContent="center" my={4}>
-          <CircularProgress />
-        </Box>
+        <div
+          className="assistant-panel__status assistant-panel__status--pending"
+          style={{ justifyContent: "center" }}
+        >
+          <span className="assistant-spinner" /> Loading delivery updates…
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="empty-state">
+          <strong>No broadcast messages yet</strong>
+          <p style={{ margin: "6px 0 0" }}>
+            Share your first announcement to see delivery activity.
+          </p>
+          <button
+            type="button"
+            className="vendor-button vendor-button--primary"
+            style={{ marginTop: 16 }}
+            onClick={() => navigate("/broadcast")}
+          >
+            Compose broadcast
+          </button>
+        </div>
       ) : (
-        <List>
-          {notifications.length === 0 && (
-            <Box
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              py={4}
-            >
-              <Typography color="text.secondary" align="center">
-                No broadcast messages sent yet.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-                onClick={() => navigate("/broadcast")}
+        <div className="stack stack--tight">
+          {notifications.map((notification) => {
+            const createdAt = new Date(notification.createdAt).toLocaleString();
+            const readAt = notification.readAt
+              ? new Date(notification.readAt).toLocaleString()
+              : null;
+            return (
+              <article
+                key={notification._id}
+                className={`broadcast-card ${
+                  notification.isRead ? "is-read" : ""
+                }`}
               >
-                Send a Broadcast
-              </Button>
-            </Box>
-          )}
-          {notifications.map((n) => (
-            <ListItem
-              key={n._id}
-              sx={{
-                bgcolor: n.isRead
-                  ? (theme) => theme.palette.background.paper
-                  : (theme) => theme.palette.action.selected,
-                borderRadius: 1,
-                mb: 1,
-                boxShadow: n.isRead ? undefined : 1,
-              }}
-            >
-              <ListItemText
-                primary={
-                  <span style={{ color: "#222", fontWeight: 600 }}>
-                    {n.title}
+                <header className="broadcast-card__header">
+                  <span className="broadcast-card__title">
+                    {notification.title}
                   </span>
-                }
-                secondary={
-                  <>
-                    <span style={{ color: "#333" }}>{n.message}</span>
-                    <br />
-                    <span style={{ fontSize: 12, color: "#666" }}>
-                      {new Date(n.createdAt).toLocaleString()}
-                    </span>
-                    {n.isRead && n.readAt && (
-                      <>
-                        <br />
-                        <span style={{ fontSize: 11, color: "#388e3c" }}>
-                          Read at {new Date(n.readAt).toLocaleString()}
-                        </span>
-                      </>
-                    )}
-                  </>
-                }
-              />
-              <Chip
-                label={n.isRead ? "Read" : "Unread"}
-                color={n.isRead ? "success" : "warning"}
-                size="small"
-                sx={{ fontWeight: 700 }}
-              />
-            </ListItem>
-          ))}
-        </List>
+                  <span
+                    className={`badge-pill ${
+                      notification.isRead
+                        ? "badge-pill--success"
+                        : "badge-pill--warning"
+                    }`}
+                  >
+                    {notification.isRead ? "Read" : "Unread"}
+                  </span>
+                </header>
+                <p className="broadcast-card__message">
+                  {notification.message}
+                </p>
+                <footer className="broadcast-card__meta">
+                  <span>Sent {createdAt}</span>
+                  {readAt ? <span>Read {readAt}</span> : null}
+                  <span className="broadcast-card__recipient">
+                    Recipient: {notification.recipient}
+                  </span>
+                </footer>
+              </article>
+            );
+          })}
+        </div>
       )}
-    </Paper>
+    </section>
   );
 };
 

@@ -90,6 +90,62 @@ const userSchema = new mongoose.Schema(
       linkedin: { type: String, default: "" },
       website: { type: String, default: "" },
     },
+    subscription: {
+      plan: {
+        type: String,
+        enum: [
+          "free",
+          "daily",
+          "weekly",
+          "monthly",
+          "quarterly",
+          "semiannual",
+          "annual",
+        ],
+        default: "free",
+      },
+      status: {
+        type: String,
+        enum: ["trial", "active", "grace", "past_due", "canceled"],
+        default: "trial",
+      },
+      startedAt: Date,
+      renewsAt: Date,
+      expiresAt: Date,
+      billingProvider: { type: String, default: null },
+      billingCustomerId: { type: String, default: null },
+      lastInvoiceId: { type: String, default: null },
+    },
+    agentSettings: {
+      tone: {
+        type: String,
+        enum: ["friendly", "professional", "casual"],
+        default: "friendly",
+      },
+      objectives: {
+        type: [String],
+        default: [],
+      },
+      enabledTools: {
+        type: [String],
+        default: [
+          "inventory_lookup",
+          "pricing_suggestion",
+          "delivery_quote",
+          "promotion_builder",
+          "message_dispatch",
+        ],
+      },
+      escalationEmails: {
+        type: [String],
+        default: [],
+      },
+    },
+    agentMetrics: {
+      totalConversations: { type: Number, default: 0 },
+      totalMessagesSent: { type: Number, default: 0 },
+      lastInteractionAt: Date,
+    },
     isVerified: {
       type: Boolean,
       default: false,

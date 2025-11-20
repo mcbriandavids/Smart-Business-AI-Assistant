@@ -1,13 +1,4 @@
 import React from "react";
-import {
-  Box,
-  Avatar,
-  Typography,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import SearchIcon from "@mui/icons-material/Search";
 
 interface DashboardTopbarProps {
   me: any;
@@ -15,76 +6,65 @@ interface DashboardTopbarProps {
   onSearchChange: (value: string) => void;
 }
 
+const iconProps = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const SearchIcon = (
+  <svg {...iconProps}>
+    <circle cx="11" cy="11" r="6" />
+    <line x1="20" y1="20" x2="16.65" y2="16.65" />
+  </svg>
+);
+const getGreetingName = (me: any) => {
+  return me?.data?.user?.firstName || me?.data?.user?.email || "there";
+};
+
 export default function DashboardTopbar({
   me,
   search,
   onSearchChange,
 }: DashboardTopbarProps) {
+  const greetingName = getGreetingName(me);
+
   return (
-    <Box
-      display="flex"
-      flexDirection={{ xs: "column", sm: "row" }}
-      alignItems={{ xs: "flex-start", sm: "center" }}
-      justifyContent="space-between"
-      mb={4}
-      gap={2}
-    >
-      <Box display="flex" alignItems="center" gap={2}>
-        <Avatar
-          src={me?.data?.user?.avatar || undefined}
-          sx={{
-            bgcolor: "primary.main",
-            width: 56,
-            height: 56,
-            fontWeight: 700,
-          }}
-        >
-          {me?.data?.user?.avatar
-            ? null
-            : me?.data?.user?.firstName?.[0] || <PersonIcon />}
-        </Avatar>
-        <Box>
-          <Typography
-            variant="h5"
-            fontWeight={800}
-            color="#222"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            Hello {me?.data?.user?.firstName || "User"}{" "}
+    <section className="glass-panel">
+      <div className="panel-header" style={{ alignItems: "flex-end" }}>
+        <div>
+          <div className="panel-eyebrow">Welcome back</div>
+          <h2 className="panel-title" style={{ display: "flex", gap: 8 }}>
+            <span>Hello {greetingName}</span>
             <span role="img" aria-label="wave">
               👋
             </span>
-          </Typography>
-          <Typography color="text.secondary" fontWeight={500} fontSize={15}>
-            Welcome back to your dashboard
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box
-        display="flex"
-        alignItems="center"
-        gap={2}
-        width={{ xs: "100%", sm: "auto" }}
-      >
-        <TextField
-          size="small"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-              sx: { borderRadius: 3, bgcolor: "#fff" },
-            },
-          }}
-          sx={{ minWidth: { xs: 0, sm: 180, md: 220 }, flex: 1 }}
-        />
-      </Box>
-    </Box>
+          </h2>
+          <p className="panel-subtitle">
+            Monitor broadcasts, manage customer records, and keep your business
+            details fresh.
+          </p>
+        </div>
+        <div className="panel-actions" style={{ width: "100%", maxWidth: 320 }}>
+          <label className="input-with-icon">
+            <span className="input-with-icon__icon" aria-hidden="true">
+              {SearchIcon}
+            </span>
+            <input
+              type="search"
+              className="form-input input-with-icon__control"
+              placeholder="Search customers"
+              value={search}
+              onChange={(event) => onSearchChange(event.target.value)}
+            />
+          </label>
+        </div>
+      </div>
+    </section>
   );
 }

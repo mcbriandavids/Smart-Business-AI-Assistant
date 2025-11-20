@@ -9,13 +9,14 @@ const Customer = require("../models/customer.model");
 exports.sendMessage = async (req, res) => {
   try {
     const vendor = req.user._id;
-    const { content, type } = req.body;
+    const { content, type, channel = "in_app" } = req.body;
     const customer = await Customer.findOne({ _id: req.params.id, vendor });
     if (!customer)
       return res
         .status(404)
         .json({ success: false, message: "Customer not found" });
-    customer.messages.push({ content, type });
+    customer.messages.push({ content, type, channel });
+    customer.lastInteractionAt = new Date();
     await customer.save();
     res.json({ success: true, data: customer });
   } catch (err) {

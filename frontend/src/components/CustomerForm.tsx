@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Box, TextField, Button } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { Customer } from "../hooks/useCustomers";
 
 interface Props {
@@ -8,99 +7,137 @@ interface Props {
   onCancel?: () => void;
 }
 
+type CustomerDraft = {
+  _id?: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+};
+
+const createDraft = (customer?: Customer): CustomerDraft => ({
+  _id: customer?._id,
+  name: customer?.name ?? "",
+  email: customer?.email ?? "",
+  phone: customer?.phone ?? "",
+  notes: customer?.notes ?? "",
+});
+
 const CustomerForm: React.FC<Props> = ({
   initialData,
   onSuccess,
   onCancel,
 }) => {
-  const [form, setForm] = useState<Partial<Customer>>(
-    initialData || { name: "", email: "", phone: "", notes: "" }
+  const [form, setForm] = useState<CustomerDraft>(() =>
+    createDraft(initialData)
   );
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (onSuccess) {
-      const { _id, ...data } = form;
-      onSuccess(data as Omit<Customer, "_id">);
-      setForm({ name: "", email: "", phone: "", notes: "" });
-    }
-  }
+  useEffect(() => {
+    setForm(createDraft(initialData));
+  }, [initialData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const payload = {
+      name: (form.name || "").trim(),
+      email: form.email?.trim() || undefined,
+      phone: form.phone?.trim() || undefined,
+      notes: form.notes?.trim() || undefined,
+    };
+
+    if (!payload.name) {
+      return;
+    }
+
+    onSuccess?.(payload);
+
+    if (!initialData) {
+      setForm(createDraft());
+    }
+  };
+
+  const isEditing = Boolean(initialData?._id);
+
   return (
-    <Box component="form" sx={{ width: "100%" }} onSubmit={handleSubmit}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-          gap: 2,
-        }}
-      >
-        <TextField
-          label="Name"
-          name="name"
-          size="small"
-          value={form.name}
-          onChange={handleChange}
-          required
-          fullWidth
-        />
-        <TextField
-          label="Email"
-          name="email"
-          size="small"
-          value={form.email}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="Phone"
-          name="phone"
-          size="small"
-          value={form.phone}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label="Notes"
+    <form className="stack stack--tight" onSubmit={handleSubmit} noValidate>
+      <div className="form-grid form-grid--two">
+        <div className="form-field">
+          <label className="form-label" htmlFor="customer-name">
+            Name
+          </label>
+          <input
+            id="customer-name"
+            name="name"
+            className="form-input"
+            required
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Acme Customer"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="customer-email">
+            Email
+          </label>
+          <input
+            id="customer-email"
+            type="email"
+            name="email"
+            className="form-input"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="name@example.com"
+          />
+        </div>
+        <div className="form-field">
+          <label className="form-label" htmlFor="customer-phone">
+            Phone
+          </label>
+          <input
+            id="customer-phone"
+            name="phone"
+            className="form-input"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="(555) 555-5555"
+          />
+        </div>
+      </div>
+      <div className="form-field">
+        <label className="form-label" htmlFor="customer-notes">
+          Notes
+        </label>
+        <textarea
+          id="customer-notes"
           name="notes"
-          size="small"
+          className="form-input form-textarea"
           value={form.notes}
           onChange={handleChange}
-          fullWidth
+          placeholder="Optional internal notes for this customer"
         />
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 2,
-          mt: 2,
-        }}
-      >
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          fullWidth={true}
-        >
-          {form._id ? "Update Customer" : "Add Customer"}
-        </Button>
-        {onCancel && (
-          <Button
-            variant="outlined"
-            color="secondary"
+      </div>
+      <div className="form-actions" style={{ justifyContent: "flex-start" }}>
+        <button type="submit" className="vendor-button vendor-button--primary">
+          {isEditing ? "Save changes" : "Add customer"}
+        </button>
+        {onCancel ? (
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
             onClick={onCancel}
-            fullWidth={true}
           >
             Cancel
-          </Button>
-        )}
-      </Box>
-    </Box>
+          </button>
+        ) : null}
+      </div>
+    </form>
   );
 };
 

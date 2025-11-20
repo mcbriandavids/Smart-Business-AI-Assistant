@@ -1,24 +1,12 @@
 import React, { useState } from "react";
-import {
-  Paper,
-  Typography,
-  Box,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Snackbar,
-  Alert,
-} from "@mui/material";
 import CustomerTable from "./CustomerTable";
 import CustomerForm from "./CustomerForm";
 import { Customer } from "../hooks/useCustomers";
+import Modal from "./Modal";
 
 interface CustomersSectionProps {
   customers: Customer[];
-  onAddCustomer: (customerData: Omit<Customer, '_id'>) => void;
+  onAddCustomer: (customerData: Omit<Customer, "_id">) => void;
   onEditCustomer: (customer: Customer) => void;
   onDeleteCustomer: (customer: Customer) => void;
   onMessageCustomer: (customer: Customer, content: string) => void;
@@ -97,126 +85,136 @@ export default function CustomersSection({
 
   return (
     <>
-      <Paper
-        elevation={1}
-        sx={{
-          borderRadius: 4,
-          p: { xs: 1, sm: 3 },
-          bgcolor: (theme) => theme.palette.background.paper,
-          width: "100%",
-          boxShadow: (theme) => theme.shadows[1],
-          mt: 2,
-        }}
-      >
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={2}
-        >
-          <Typography variant="h6" fontWeight={800}>
-            All Customers
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddCustomer}
-            sx={{ fontWeight: 700, boxShadow: 2 }}
-          >
-            Add Customer
-          </Button>
-        </Box>
-        {customers.length === 0 ? (
-          <Typography color="text.secondary" align="center" sx={{ my: 4 }}>
-            No customers found. Click "Add Customer" to create your first
-            customer.
-          </Typography>
-        ) : (
-          <CustomerTable
-            customers={filteredCustomers}
-            onEdit={handleEditCustomer}
-            onDelete={onDeleteCustomer}
-            onMessage={handleMessageCustomer}
-          />
-        )}
-      </Paper>
+      <section className="glass-panel">
+        <div className="panel-header">
+          <div>
+            <div className="panel-eyebrow">Directory</div>
+            <h3 className="panel-title">Customers</h3>
+            <p className="panel-subtitle">
+              Add, edit, and message customers while keeping conversations
+              focused.
+            </p>
+          </div>
+          <div className="panel-actions">
+            <button
+              type="button"
+              className="vendor-button vendor-button--primary"
+              onClick={handleAddCustomer}
+            >
+              Add customer
+            </button>
+          </div>
+        </div>
 
-      {/* Add/Edit Customer Modal */}
-      <Dialog
+        {snackbar.open ? (
+          <div
+            className={`callout ${
+              snackbar.severity === "success"
+                ? "callout--success"
+                : "callout--error"
+            }`}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <span>{snackbar.message}</span>
+            <button
+              type="button"
+              className="vendor-button vendor-button--ghost vendor-button--compact"
+              onClick={() => setSnackbar({ ...snackbar, open: false })}
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
+
+        <CustomerTable
+          customers={filteredCustomers}
+          onEdit={handleEditCustomer}
+          onDelete={onDeleteCustomer}
+          onMessage={handleMessageCustomer}
+        />
+      </section>
+
+      <Modal
         open={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
-        maxWidth="sm"
-        fullWidth
+        title={editingCustomer ? "Edit customer" : "Add customer"}
+        description={
+          editingCustomer
+            ? "Update details to keep your customer list aligned."
+            : "Capture key contact information so the assistant can take action."
+        }
+        size="md"
       >
-        <DialogTitle>
-          {editingCustomer ? "Edit Customer" : "Add Customer"}
-        </DialogTitle>
-        <DialogContent>
-          <CustomerForm
-            initialData={editingCustomer || undefined}
-            onSuccess={(customerData) => {
-              if (editingCustomer) {
-                onEditCustomer({ ...editingCustomer, ...customerData });
-              } else {
-                onAddCustomer(customerData);
-              }
-              setShowCustomerModal(false);
-            }}
-            onCancel={() => setShowCustomerModal(false)}
-          />
-        </DialogContent>
-      </Dialog>
+        <CustomerForm
+          initialData={editingCustomer || undefined}
+          onSuccess={(customerData) => {
+            if (editingCustomer) {
+              onEditCustomer({ ...editingCustomer, ...customerData });
+            } else {
+              onAddCustomer(customerData);
+            }
+            setShowCustomerModal(false);
+            setSnackbar({
+              open: true,
+              message: "Customer saved",
+              severity: "success",
+            });
+          }}
+          onCancel={() => setShowCustomerModal(false)}
+        />
+      </Modal>
 
-      {/* Message Customer Dialog */}
-      <Dialog
+      <Modal
         open={messageDialog.open}
         onClose={() => setMessageDialog({ open: false })}
-        maxWidth="xs"
-        fullWidth
+        title="Message customer"
+        description={
+          messageDialog.customer
+            ? `Send a quick note to ${messageDialog.customer.name}.`
+            : undefined
+        }
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              className="vendor-button vendor-button--ghost"
+              onClick={() => setMessageDialog({ open: false })}
+              disabled={messageLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="vendor-button vendor-button--primary"
+              onClick={handleSendMessage}
+              disabled={messageLoading || !messageText.trim()}
+            >
+              {messageLoading ? "Sending…" : "Send message"}
+            </button>
+          </>
+        }
       >
-        <DialogTitle>Message Customer</DialogTitle>
-        <DialogContent>
-          <Typography mb={1}>
-            To: {messageDialog.customer?.name || ""}
-          </Typography>
-          <TextField
-            multiline
-            minRows={2}
-            fullWidth
-            placeholder="Type your message..."
+        <div className="form-field">
+          <label className="form-label" htmlFor="message-text">
+            Message
+          </label>
+          <textarea
+            id="message-text"
+            className="form-input form-textarea"
+            minLength={1}
+            placeholder="Type your message…"
             value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
+            onChange={(event) => setMessageText(event.target.value)}
             disabled={messageLoading}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setMessageDialog({ open: false })}
-            disabled={messageLoading}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSendMessage}
-            disabled={messageLoading || !messageText.trim()}
-            variant="contained"
-            color="primary"
-          >
-            {messageLoading ? "Sending..." : "Send"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for feedback */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        </div>
+      </Modal>
     </>
   );
 }

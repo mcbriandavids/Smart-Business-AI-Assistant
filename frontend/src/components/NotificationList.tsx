@@ -1,17 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api/client";
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Typography,
-  CircularProgress,
-  Box,
-  Chip,
-} from "@mui/material";
-import DoneIcon from "@mui/icons-material/Done";
 
 interface Notification {
   _id: string;
@@ -21,6 +9,21 @@ interface Notification {
   readAt?: string;
   createdAt: string;
 }
+
+const checkIcon = (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M13.28 4.22a.75.75 0 0 1 0 1.06l-6.01 6.01a.75.75 0 0 1-1.06 0L2.72 7.8a.75.75 0 0 1 1.06-1.06L6.5 9.46l5.48-5.48a.75.75 0 0 1 1.06 0Z"
+      fill="currentColor"
+    />
+  </svg>
+);
 
 const NotificationList: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -53,57 +56,92 @@ const NotificationList: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" my={4}>
-        <CircularProgress />
-      </Box>
+      <section className="glass-panel">
+        <div className="panel-header">
+          <div>
+            <div className="panel-eyebrow">Notifications</div>
+            <h2 className="panel-title">Activity center</h2>
+          </div>
+        </div>
+        <div className="empty-state" style={{ marginTop: 16 }}>
+          <span className="assistant-spinner" />
+          <p style={{ margin: "12px 0 0" }}>Loading notifications…</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom>
-        Notifications
-      </Typography>
-      <List>
-        {notifications.map((n) => (
-          <ListItem
-            key={n._id}
-            selected={!n.isRead}
-            sx={{ bgcolor: n.isRead ? undefined : "#e3f2fd" }}
-            secondaryAction={
-              !n.isRead ? (
-                <IconButton edge="end" onClick={() => markAsRead(n._id)}>
-                  <DoneIcon />
-                </IconButton>
-              ) : (
-                <Chip label="Read" size="small" color="success" />
-              )
-            }
-          >
-            <ListItemText
-              primary={n.title}
-              secondary={
-                <>
-                  <span>{n.message}</span>
-                  <br />
-                  <span style={{ fontSize: 12, color: "#888" }}>
-                    {new Date(n.createdAt).toLocaleString()}
-                  </span>
-                  {n.isRead && n.readAt && (
-                    <>
-                      <br />
-                      <span style={{ fontSize: 11, color: "#4caf50" }}>
-                        Read at {new Date(n.readAt).toLocaleString()}
-                      </span>
-                    </>
-                  )}
-                </>
-              }
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
+    <section className="glass-panel">
+      <div className="panel-header" style={{ alignItems: "flex-end" }}>
+        <div>
+          <div className="panel-eyebrow">Notifications</div>
+          <h2 className="panel-title">Activity center</h2>
+          <p className="panel-subtitle">
+            Review system updates, customer interactions, and broadcast delivery
+            receipts.
+          </p>
+        </div>
+      </div>
+      {notifications.length === 0 ? (
+        <div className="empty-state">
+          <strong>You're all caught up</strong>
+          <p style={{ margin: "6px 0 0" }}>
+            New notifications will appear here as your assistant takes action.
+          </p>
+        </div>
+      ) : (
+        <ul className="notification-list">
+          {notifications.map((notification) => (
+            <li
+              key={notification._id}
+              className={`notification-card ${
+                notification.isRead ? "" : "notification-card--unread"
+              }`}
+            >
+              <div className="notification-card__header">
+                <div>
+                  <h3 className="notification-card__title">
+                    {notification.title}
+                  </h3>
+                  <time className="notification-card__timestamp">
+                    {new Date(notification.createdAt).toLocaleString()}
+                  </time>
+                </div>
+                {notification.isRead ? (
+                  <span className="badge-pill badge-pill--subtle">Read</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="vendor-button vendor-button--ghost vendor-button--compact"
+                    onClick={() => markAsRead(notification._id)}
+                  >
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        gap: 6,
+                        alignItems: "center",
+                      }}
+                    >
+                      {checkIcon}
+                      Mark as read
+                    </span>
+                  </button>
+                )}
+              </div>
+              <p className="notification-card__message">
+                {notification.message}
+              </p>
+              {notification.isRead && notification.readAt ? (
+                <p className="notification-card__read-at">
+                  Read at {new Date(notification.readAt).toLocaleString()}
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 };
 

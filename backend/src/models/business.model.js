@@ -124,12 +124,60 @@ const businessSchema = new mongoose.Schema(
         radius: { type: Number, default: 10 },
         fee: { type: Number, default: 0 },
         estimatedTime: { type: String, default: "30-45 minutes" },
+        baseFee: { type: Number, default: 0 },
+        perKmFee: { type: Number, default: 0 },
+        freeDeliveryThreshold: { type: Number, default: null },
       },
       pickup: {
         enabled: { type: Boolean, default: true },
         instructions: String,
       },
     },
+    messagingPreferences: {
+      defaultChannel: {
+        type: String,
+        enum: ["sms", "email", "in_app"],
+        default: "in_app",
+      },
+      sendWindowStart: { type: String, default: "08:00" },
+      sendWindowEnd: { type: String, default: "20:00" },
+      autoFollowUpHours: { type: Number, default: 48 },
+    },
+    promotions: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, default: "" },
+        code: { type: String, trim: true },
+        discountType: {
+          type: String,
+          enum: ["percentage", "fixed", "bogo", "free_delivery"],
+          default: "percentage",
+        },
+        discountValue: { type: Number, default: 0 },
+        minimumSpend: { type: Number, default: 0 },
+        channels: {
+          type: [String],
+          default: ["sms", "email", "in_app"],
+        },
+        startsAt: { type: Date, required: true },
+        endsAt: { type: Date, required: true },
+        audienceSegments: { type: [String], default: [] },
+        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        status: {
+          type: String,
+          enum: ["draft", "scheduled", "active", "expired", "canceled"],
+          default: "draft",
+        },
+      },
+    ],
+    customerSegments: [
+      {
+        name: { type: String, required: true },
+        criteria: { type: Object, default: {} },
+        size: { type: Number, default: 0 },
+        lastRefreshedAt: Date,
+      },
+    ],
     paymentMethods: [
       {
         type: String,
@@ -154,6 +202,14 @@ const businessSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     isOpen: { type: Boolean, default: true },
+    aiAgent: {
+      onboardingCompleted: { type: Boolean, default: false },
+      defaultObjectives: { type: [String], default: [] },
+      lastRecommendation: {
+        content: { type: String, default: null },
+        createdAt: { type: Date, default: null },
+      },
+    },
   },
   { timestamps: true }
 );

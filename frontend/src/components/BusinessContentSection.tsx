@@ -1,11 +1,4 @@
 import React, { useState } from "react";
-import {
-  Paper,
-  Typography,
-  Box,
-  Button,
-  TextField,
-} from "@mui/material";
 
 interface BusinessContentSectionProps {
   businessContent: string;
@@ -28,61 +21,60 @@ export default function BusinessContentSection({
   };
 
   return (
-    <Paper
-      elevation={1}
-      sx={{
-        borderRadius: 4,
-        p: { xs: 2, sm: 3 },
-        bgcolor: (theme) => theme.palette.background.paper,
-        mb: 4,
-        boxShadow: (theme) => theme.shadows[1],
-      }}
-    >
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={2}
-      >
-        <Typography variant="h6" fontWeight={800} sx={{ mb: 0 }}>
-          Business Description
-        </Typography>
-        {!editMode ? (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setEditMode(true)}
-          >
-            Edit
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        )}
-      </Box>
+    <section className="glass-panel glass-panel--gradient">
+      <div className="panel-header">
+        <div>
+          <div className="panel-eyebrow">Business profile</div>
+          <h3 className="panel-title">Business description</h3>
+          <p className="panel-subtitle">
+            Keep this summary up to date so broadcasts and customer outreach
+            stay on-brand.
+          </p>
+        </div>
+        <div className="panel-actions">
+          {!editMode ? (
+            <button
+              type="button"
+              className="vendor-button vendor-button--ghost"
+              onClick={() => setEditMode(true)}
+            >
+              Edit details
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="vendor-button vendor-button--primary"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          )}
+        </div>
+      </div>
       {!editMode ? (
-        <Typography
-          color="text.secondary"
-          sx={{ whiteSpace: "pre-line" }}
+        <p
+          className="panel-subtitle"
+          style={{ marginBottom: 0, whiteSpace: "pre-line" }}
         >
           {businessContent || "No description set."}
-        </Typography>
+        </p>
       ) : (
-        <TextField
-          multiline
-          minRows={3}
-          fullWidth
-          value={businessContent}
-          onChange={(e) => setBusinessContent(e.target.value)}
-          disabled={saving}
-        />
+        <div className="form-field">
+          <label className="form-label" htmlFor="business-description">
+            Description
+          </label>
+          <textarea
+            id="business-description"
+            className="form-input form-textarea"
+            minLength={20}
+            value={businessContent}
+            onChange={(event) => setBusinessContent(event.target.value)}
+            disabled={saving}
+            placeholder="Share what makes your business unique."
+          />
+        </div>
       )}
-    </Paper>
+    </section>
   );
 }

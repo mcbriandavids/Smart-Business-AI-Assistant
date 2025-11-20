@@ -14,6 +14,7 @@ npm run dev
 
 - Health check: `GET http://localhost:3000/health`
 - Environment: `.env` at project root (see variables below)
+- AI agent features prefer `OPENAI_API_KEY` (GPT-5-Codex). Without it (or when `AGENT_MODE=mock`), endpoints fall back to mock suggestions.
 
 ## Security & middleware
 
@@ -113,6 +114,15 @@ Pricing rules:
 - Broadcast to contacts (vendor/admin) `POST /api/vendor-customers/broadcast`
 - Customer reply `POST /api/vendor-customers/:id/reply`
 
+## Agent
+
+- Create session (vendor/admin) `POST /api/agent-sessions`
+  - body: `{ customer-id?, channel?, tags?, context? }`
+- Act (vendor/admin) `POST /api/agent-sessions/{conversationId}/actions`
+  - body: `{ input, metadata? }`
+- Requires JWT auth. Set `OPENAI_API_KEY` (or `AGENT_MODE=live`) for live OpenAI responses; otherwise the agent returns deterministic mock guidance suitable for demos.
+- Tool executions are logged to the `AgentToolAudit` collection with arguments, outputs, and status for compliance review. The agent response payload includes executed tool details so the frontend can display intermediate actions.
+
 ## Admin
 
 - Stats `GET /api/admin/stats`
@@ -131,8 +141,17 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 JWT_SECRET=your-secret
 JWT_EXPIRE=7d
+OPENAI_API_KEY=sk-...
+AGENT_MODE=auto
+TWILIO_API_KEY=optional
+SENDGRID_API_KEY=optional
 SERVICE_CHARGE_PERCENTAGE=0
 ```
+
+- `AGENT_MODE` options:
+  - `auto` (default): use OpenAI when `OPENAI_API_KEY` is set, otherwise mock.
+  - `live`: require OpenAI; logs a warning then falls back to mock if the key is missing.
+  - `mock`: always serve deterministic mock suggestions.
 
 ## Scripts
 
