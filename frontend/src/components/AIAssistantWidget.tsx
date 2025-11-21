@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AIAssistantPanel from "./AIAssistantPanel";
 import { useAssistantContext } from "../contexts/AssistantContext";
 
@@ -32,12 +32,26 @@ const icons = {
 export default function AIAssistantWidget() {
   const [open, setOpen] = useState(false);
   const { conversationId, customerId } = useAssistantContext();
+  const canActivate = Boolean(customerId);
+
+  useEffect(() => {
+    if (!canActivate) {
+      setOpen(false);
+    }
+  }, [canActivate]);
+
+  const toggleOpen = () => {
+    if (!canActivate) {
+      return;
+    }
+    setOpen((prev) => !prev);
+  };
 
   return (
     <div
       className={`assistant-floating ${open ? "assistant-floating--open" : ""}`}
     >
-      {open ? (
+      {open && canActivate ? (
         <div className="assistant-floating__panel">
           <AIAssistantPanel
             variant="widget"
@@ -50,14 +64,30 @@ export default function AIAssistantWidget() {
 
       <button
         type="button"
-        className="assistant-floating__cta"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
+        className={`assistant-floating__cta${
+          canActivate ? "" : " assistant-floating__cta--disabled"
+        }`}
+        onClick={toggleOpen}
+        aria-expanded={canActivate ? open : undefined}
         aria-haspopup="dialog"
-        aria-label={open ? "Close AI assistant" : "Open AI assistant"}
+        aria-label={
+          open
+            ? "Close AI assistant"
+            : canActivate
+            ? "Open AI assistant"
+            : "Select a customer to enable AI assistant"
+        }
+        disabled={!canActivate}
+        title={
+          canActivate
+            ? undefined
+            : "Select a customer to enable the AI assistant"
+        }
       >
         {open ? icons.close : icons.chat}
-        <span>{open ? "Close" : "Ask AI"}</span>
+        <span>
+          {open ? "Close" : canActivate ? "Ask AI" : "Select customer"}
+        </span>
       </button>
     </div>
   );

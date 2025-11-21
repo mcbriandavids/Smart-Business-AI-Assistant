@@ -715,7 +715,7 @@ const VendorCustomersPage: React.FC = () => {
         </div>
       ) : null}
 
-      <section className="glass-panel">
+      <section className="glass-panel glass-panel--compact">
         <div className="panel-header">
           <div>
             <div className="panel-eyebrow">Agent insights filters</div>
@@ -744,7 +744,7 @@ const VendorCustomersPage: React.FC = () => {
         </div>
 
         {shouldShowFilterForm ? (
-          <div className="stack stack--tight">
+          <div className="filter-panel filter-panel--compressed">
             <div className="form-grid form-grid--two">
               <div className="form-field">
                 <label
@@ -881,56 +881,54 @@ const VendorCustomersPage: React.FC = () => {
         ) : null}
       </section>
 
-      <div className="layout-grid layout-grid--two">
-        <div className="stack stack--loose">
-          {editingCustomer ? (
-            <section className="glass-panel glass-panel--gradient">
-              <div className="panel-header">
-                <div>
-                  <div className="panel-eyebrow">Edit customer</div>
-                  <h3 className="panel-title">
-                    {editingCustomer.name || "Update customer"}
-                  </h3>
-                  <p className="panel-subtitle">
-                    Update customer details to keep your records aligned.
-                  </p>
-                </div>
-              </div>
-              <CustomerForm
-                initialData={editingCustomer}
-                onSuccess={handleSaveEdit}
-                onCancel={handleCancelEdit}
-              />
-            </section>
-          ) : null}
-
-          <section className="glass-panel">
-            <div className="panel-header">
-              <div>
-                <div className="panel-eyebrow">Directory</div>
-                <h3 className="panel-title">Customers</h3>
-                <p className="panel-subtitle">
-                  Select a customer to focus the conversation insights.
-                </p>
-              </div>
+      {editingCustomer ? (
+        <section className="glass-panel glass-panel--gradient">
+          <div className="panel-header">
+            <div>
+              <div className="panel-eyebrow">Edit customer</div>
+              <h3 className="panel-title">
+                {editingCustomer.name || "Update customer"}
+              </h3>
+              <p className="panel-subtitle">
+                Update customer details to keep your records aligned.
+              </p>
             </div>
-            {loading ? (
-              <div className="assistant-panel__status assistant-panel__status--pending">
-                <span className="assistant-spinner" /> Loading customers…
-              </div>
-            ) : (
-              <CustomerTable
-                customers={customers}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onSelect={handleSelectCustomer}
-                selectedCustomerId={selectedCustomer?._id ?? null}
-              />
-            )}
-          </section>
-        </div>
+          </div>
+          <CustomerForm
+            initialData={editingCustomer}
+            onSuccess={handleSaveEdit}
+            onCancel={handleCancelEdit}
+          />
+        </section>
+      ) : null}
 
-        <div className="stack stack--loose">
+      <section className="glass-panel">
+        <div className="panel-header">
+          <div>
+            <div className="panel-eyebrow">Directory</div>
+            <h3 className="panel-title">Customers</h3>
+            <p className="panel-subtitle">
+              Select a customer to focus the conversation insights.
+            </p>
+          </div>
+        </div>
+        {loading ? (
+          <div className="assistant-panel__status assistant-panel__status--pending">
+            <span className="assistant-spinner" /> Loading customers…
+          </div>
+        ) : (
+          <CustomerTable
+            customers={customers}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={handleSelectCustomer}
+            selectedCustomerId={selectedCustomer?._id ?? null}
+          />
+        )}
+      </section>
+
+      <div className="layout-grid layout-grid--two">
+        <div className="stack stack--loose layout-span-full">
           <section className="glass-panel">
             <div className="panel-header">
               <div>
@@ -997,9 +995,10 @@ const VendorCustomersPage: React.FC = () => {
               </p>
             </div>
           </section>
-
-          {isSmallScreen ? (
-            <div className="stack stack--tight">
+        </div>
+        {selectedCustomerId ? (
+          isSmallScreen ? (
+            <div className="layout-span-full stack stack--tight">
               <div
                 className="tab-switcher"
                 role="tablist"
@@ -1073,30 +1072,46 @@ const VendorCustomersPage: React.FC = () => {
             </div>
           ) : (
             <>
-              <AgentConversationTimeline
-                conversationId={activeConversationId}
-                customerId={selectedCustomer?._id ?? null}
-                onConversationChange={handleConversationChange}
-                statusFilter={conversationFilters.status}
-                searchTerm={conversationFilters.search}
-                sortOrder={conversationFilters.sort}
-                fromDate={conversationFilters.from || null}
-                toDate={conversationFilters.to || null}
-                refreshKey={conversationUpdateToken}
-              />
-              <AgentToolActivity
-                limit={8}
-                conversationId={activeConversationId}
-                customerId={selectedCustomer?._id ?? null}
-                statusFilter={toolFilters.status}
-                fromDate={conversationFilters.from || null}
-                toDate={conversationFilters.to || null}
-                onSelectConversation={handleActivityNavigate}
-                refreshKey={conversationUpdateToken}
-              />
+              <div className="layout-span-full">
+                <AgentConversationTimeline
+                  conversationId={activeConversationId}
+                  customerId={selectedCustomer?._id ?? null}
+                  onConversationChange={handleConversationChange}
+                  statusFilter={conversationFilters.status}
+                  searchTerm={conversationFilters.search}
+                  sortOrder={conversationFilters.sort}
+                  fromDate={conversationFilters.from || null}
+                  toDate={conversationFilters.to || null}
+                  refreshKey={conversationUpdateToken}
+                />
+              </div>
+              <div className="layout-span-full">
+                <AgentToolActivity
+                  limit={8}
+                  conversationId={activeConversationId}
+                  customerId={selectedCustomer?._id ?? null}
+                  statusFilter={toolFilters.status}
+                  fromDate={conversationFilters.from || null}
+                  toDate={conversationFilters.to || null}
+                  onSelectConversation={handleActivityNavigate}
+                  refreshKey={conversationUpdateToken}
+                />
+              </div>
             </>
-          )}
-        </div>
+          )
+        ) : (
+          <div className="layout-span-full">
+            <section className="glass-panel">
+              <div className="empty-state">
+                <strong>Select a customer to activate AI insights</strong>
+                <p style={{ margin: "6px 0 0" }}>
+                  Choose a customer from the directory to unlock conversation
+                  history and tool activity.
+                </p>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
 
       <MessageDialog />

@@ -78,14 +78,17 @@ const BroadcastDeliveryList: React.FC = () => {
         </div>
       ) : (
         <div className="stack stack--tight">
-          {notifications.map((notification) => {
+          {notifications.map((notification, index) => {
             const createdAt = new Date(notification.createdAt).toLocaleString();
             const readAt = notification.readAt
               ? new Date(notification.readAt).toLocaleString()
               : null;
+            const key = notification._id
+              ? `notification-${notification._id}`
+              : `notification-${index}-${notification.createdAt}`;
             return (
               <article
-                key={notification._id}
+                key={key}
                 className={`broadcast-card ${
                   notification.isRead ? "is-read" : ""
                 }`}

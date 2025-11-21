@@ -66,7 +66,10 @@ const router = createBrowserRouter(routes);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-      <RouterProvider router={router} />
+      <RouterProvider
+        router={router}
+        future={{ v7_startTransition: true } as any}
+      />
     </Suspense>
   </React.StrictMode>
 );

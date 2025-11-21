@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
 
 interface Notification {
@@ -28,48 +28,128 @@ const checkIcon = (
 const NotificationList: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchNotifications();
+  const coerceNotification = useCallback((entry: any): Notification => {
+    const idSource =
+      entry?._id ||
+      entry?.id ||
+      entry?.notificationId ||
+      entry?.notification_id ||
+      `temp-${Math.random().toString(36).slice(2)}`;
+
+    const title = entry?.title || entry?.subject || "Notification";
+    const message =
+      entry?.message || entry?.body || entry?.description || "No details";
+
+    const createdAtSource =
+      entry?.createdAt ||
+      entry?.created_at ||
+      entry?.timestamp ||
+      entry?.date ||
+      new Date().toISOString();
+
+    const createdAt =
+      typeof createdAtSource === "string"
+        ? createdAtSource
+        : new Date(createdAtSource).toISOString();
+
+    const readAtSource = entry?.readAt || entry?.read_at || null;
+
+    return {
+      _id: String(idSource),
+      title: String(title),
+      message: String(message),
+      isRead: Boolean(entry?.isRead ?? entry?.read ?? false),
+      readAt:
+        typeof readAtSource === "string"
+          ? readAtSource
+          : readAtSource instanceof Date
+          ? readAtSource.toISOString()
+          : undefined,
+      createdAt,
+    };
   }, []);
 
-  async function fetchNotifications() {
+  const extractItems = useCallback((payload: any): any[] => {
+    if (!payload) {
+      return [];
+    }
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    if (Array.isArray(payload.items)) {
+      return payload.items;
+    }
+    if (Array.isArray(payload.notifications)) {
+      return payload.notifications;
+    }
+    if (Array.isArray(payload.results)) {
+      return payload.results;
+    }
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+    return [];
+  }, []);
+
+  const fetchNotifications = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await api.get("/api/notifications");
-      setNotifications(res.data.data.items || []);
+      const payload = res?.data?.data ?? res?.data ?? [];
+      const items = extractItems(payload).map(coerceNotification);
+      setNotifications(items);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to load notifications"
+      );
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [coerceNotification, extractItems]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   async function markAsRead(id: string) {
-    await api.put(`/api/notifications/${id}/read`);
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n._id === id
-          ? { ...n, isRead: true, readAt: new Date().toISOString() }
-          : n
-      )
-    );
+    try {
+      await api.put(`/api/notifications/${id}/read`);
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification._id === id
+            ? {
+                ...notification,
+                isRead: true,
+                readAt: new Date().toISOString(),
+              }
+            : notification
+        )
+      );
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to mark notification as read"
+      );
+    }
   }
 
-  if (loading) {
-    return (
-      <section className="glass-panel">
-        <div className="panel-header">
-          <div>
-            <div className="panel-eyebrow">Notifications</div>
-            <h2 className="panel-title">Activity center</h2>
-          </div>
-        </div>
-        <div className="empty-state" style={{ marginTop: 16 }}>
-          <span className="assistant-spinner" />
-          <p style={{ margin: "12px 0 0" }}>Loading notifications…</p>
-        </div>
-      </section>
-    );
-  }
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const renderEmptyState = () => (
+    <div className="empty-state">
+      <strong>You're all caught up</strong>
+      <p style={{ margin: "6px 0 0" }}>
+        New notifications will appear here as your assistant takes action.
+      </p>
+    </div>
+  );
 
   return (
     <section className="glass-panel">
@@ -78,19 +158,60 @@ const NotificationList: React.FC = () => {
           <div className="panel-eyebrow">Notifications</div>
           <h2 className="panel-title">Activity center</h2>
           <p className="panel-subtitle">
-            Review system updates, customer interactions, and broadcast delivery
-            receipts.
+            {unreadCount > 0
+              ? `${unreadCount} unread ${
+                  unreadCount === 1 ? "alert" : "alerts"
+                }`
+              : "Review system updates, customer interactions, and broadcast receipts."}
           </p>
+        </div>
+        <div className="panel-actions">
+          <button
+            type="button"
+            className="vendor-button vendor-button--ghost"
+            onClick={fetchNotifications}
+            disabled={loading}
+          >
+            {loading ? "Refreshing…" : "Refresh"}
+          </button>
         </div>
       </div>
-      {notifications.length === 0 ? (
-        <div className="empty-state">
-          <strong>You're all caught up</strong>
-          <p style={{ margin: "6px 0 0" }}>
-            New notifications will appear here as your assistant takes action.
-          </p>
+
+      {error ? (
+        <div className="callout callout--error" role="alert">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <span>{error}</span>
+            <button
+              type="button"
+              className="vendor-button vendor-button--ghost vendor-button--compact"
+              onClick={fetchNotifications}
+            >
+              Try again
+            </button>
+          </div>
         </div>
-      ) : (
+      ) : null}
+
+      {loading && notifications.length === 0 && !error ? (
+        <div className="empty-state" style={{ marginTop: 16 }}>
+          <span className="assistant-spinner" />
+          <p style={{ margin: "12px 0 0" }}>Loading notifications…</p>
+        </div>
+      ) : null}
+
+      {!loading && !error && notifications.length === 0
+        ? renderEmptyState()
+        : null}
+
+      {notifications.length > 0 ? (
         <ul className="notification-list">
           {notifications.map((notification) => (
             <li
@@ -140,7 +261,13 @@ const NotificationList: React.FC = () => {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
+
+      {loading && notifications.length > 0 ? (
+        <div className="form-helper" style={{ marginTop: 18 }}>
+          Updating feed…
+        </div>
+      ) : null}
     </section>
   );
 };

@@ -1,8 +1,29 @@
 import axios from "axios";
 import { getToken } from "../utils/auth";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE?.trim() || "http://localhost:5000";
+function resolveBaseURL(): string {
+  const fromEnv = import.meta.env.VITE_API_BASE?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname, port } = window.location;
+    const isLocalhost = ["localhost", "127.0.0.1"].includes(hostname);
+
+    if (isLocalhost) {
+      const devPorts = new Set(["5173", "5174", "4173", "4174"]);
+      const targetPort = !port || devPorts.has(port) ? "3000" : port;
+      return `${protocol}//${hostname}:${targetPort}`;
+    }
+
+    return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
+  }
+
+  return "http://localhost:3000";
+}
+
+const baseURL = resolveBaseURL();
 
 console.log("[client.ts] VITE_API_BASE:", import.meta.env.VITE_API_BASE);
 console.log("[client.ts] axios baseURL:", baseURL);
@@ -28,6 +49,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Remove token and redirect to login
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       window.location.href = "/login";
     }
     return Promise.reject(error);

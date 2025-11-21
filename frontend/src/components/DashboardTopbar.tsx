@@ -4,6 +4,7 @@ interface DashboardTopbarProps {
   me: any;
   search: string;
   onSearchChange: (value: string) => void;
+  showSearch?: boolean;
 }
 
 const iconProps = {
@@ -31,12 +32,16 @@ export default function DashboardTopbar({
   me,
   search,
   onSearchChange,
+  showSearch = true,
 }: DashboardTopbarProps) {
   const greetingName = getGreetingName(me);
 
   return (
-    <section className="glass-panel">
-      <div className="panel-header" style={{ alignItems: "flex-end" }}>
+    <section className="glass-panel glass-panel--compact">
+      <div
+        className="panel-header"
+        style={{ alignItems: showSearch ? "flex-end" : "flex-start" }}
+      >
         <div>
           <div className="panel-eyebrow">Welcome back</div>
           <h2 className="panel-title" style={{ display: "flex", gap: 8 }}>
@@ -50,20 +55,25 @@ export default function DashboardTopbar({
             details fresh.
           </p>
         </div>
-        <div className="panel-actions" style={{ width: "100%", maxWidth: 320 }}>
-          <label className="input-with-icon">
-            <span className="input-with-icon__icon" aria-hidden="true">
-              {SearchIcon}
-            </span>
-            <input
-              type="search"
-              className="form-input input-with-icon__control"
-              placeholder="Search customers"
-              value={search}
-              onChange={(event) => onSearchChange(event.target.value)}
-            />
-          </label>
-        </div>
+        {showSearch ? (
+          <div
+            className="panel-actions"
+            style={{ width: "100%", maxWidth: 320 }}
+          >
+            <label className="input-with-icon">
+              <span className="input-with-icon__icon" aria-hidden="true">
+                {SearchIcon}
+              </span>
+              <input
+                type="search"
+                className="form-input input-with-icon__control"
+                placeholder="Search customers"
+                value={search}
+                onChange={(event) => onSearchChange(event.target.value)}
+              />
+            </label>
+          </div>
+        ) : null}
       </div>
     </section>
   );

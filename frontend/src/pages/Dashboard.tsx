@@ -30,6 +30,9 @@ export default function Dashboard() {
     message: "",
     severity: "success",
   });
+  const [activeView, setActiveView] = useState<"overview" | "customers">(
+    "overview"
+  );
 
   // Custom hooks
   const {
@@ -62,17 +65,7 @@ export default function Dashboard() {
     sendBroadcast,
   } = useBroadcast();
 
-  // Debug logging
-  useEffect(() => {
-    setTimeout(() => {
-      import("../utils/auth").then(({ getToken }) => {
-        // eslint-disable-next-line no-console
-        console.log("[Dashboard] User:", me);
-        // eslint-disable-next-line no-console
-        console.log("[Dashboard] Token:", getToken && getToken());
-      });
-    }, 1000);
-  }, [me]);
+  // Debug logging removed to prevent noisy console warnings in production
 
   // Show business creation modal if vendor/owner and no business exists
   useEffect(() => {
@@ -228,6 +221,11 @@ export default function Dashboard() {
     return () => window.clearTimeout(timeout);
   }, [snackbar.open]);
 
+  const overviewTabId = "dashboard-tab-overview";
+  const customersTabId = "dashboard-tab-customers";
+  const overviewPanelId = "dashboard-panel-overview";
+  const customersPanelId = "dashboard-panel-customers";
+
   return (
     <div className="stack stack--loose">
       {snackbar.open ? (
@@ -257,29 +255,98 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      <DashboardTopbar me={me} search={search} onSearchChange={setSearch} />
+      <DashboardTopbar
+        me={me}
+        search={search}
+        onSearchChange={setSearch}
+        showSearch={activeView === "customers"}
+      />
 
-      <div className="layout-grid layout-grid--two">
-        <div className="stack stack--loose">
-          {me?.data?.user?.role === "vendor" ? (
-            <BroadcastSection
-              broadcastMsg={broadcastMsg}
-              setBroadcastMsg={setBroadcastMsg}
-              broadcasting={broadcasting}
-              broadcastSuccess={broadcastSuccess}
-              onSendBroadcast={sendBroadcast}
-            />
-          ) : null}
+      <div
+        className="tab-switcher"
+        role="tablist"
+        aria-label="Dashboard sections"
+      >
+        <button
+          type="button"
+          role="tab"
+          id={overviewTabId}
+          aria-controls={overviewPanelId}
+          aria-selected={activeView === "overview"}
+          className={`tab-switcher__button${
+            activeView === "overview" ? " tab-switcher__button--active" : ""
+          }`}
+          tabIndex={activeView === "overview" ? 0 : -1}
+          onClick={() => setActiveView("overview")}
+        >
+          Overview
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id={customersTabId}
+          aria-controls={customersPanelId}
+          aria-selected={activeView === "customers"}
+          className={`tab-switcher__button${
+            activeView === "customers" ? " tab-switcher__button--active" : ""
+          }`}
+          tabIndex={activeView === "customers" ? 0 : -1}
+          onClick={() => setActiveView("customers")}
+        >
+          Customers
+        </button>
+      </div>
 
-          {me?.data?.user?.role === "vendor" && businessContent ? (
-            <BusinessContentSection
-              businessContent={businessContent}
-              setBusinessContent={setBusinessContent}
-              saving={businessSaving}
-              onSave={handleSaveBusinessContent}
-            />
-          ) : null}
+      {activeView === "overview" ? (
+        <div
+          role="tabpanel"
+          id={overviewPanelId}
+          aria-labelledby={overviewTabId}
+          className="stack stack--loose"
+        >
+          <div className="layout-grid layout-grid--two">
+            <div className="stack stack--loose">
+              {me?.data?.user?.role === "vendor" ? (
+                <BroadcastSection
+                  broadcastMsg={broadcastMsg}
+                  setBroadcastMsg={setBroadcastMsg}
+                  broadcasting={broadcasting}
+                  broadcastSuccess={broadcastSuccess}
+                  onSendBroadcast={sendBroadcast}
+                />
+              ) : null}
 
+              {me?.data?.user?.role === "vendor" && businessContent ? (
+                <BusinessContentSection
+                  businessContent={businessContent}
+                  setBusinessContent={setBusinessContent}
+                  saving={businessSaving}
+                  onSave={handleSaveBusinessContent}
+                />
+              ) : null}
+            </div>
+
+            <div className="stack stack--loose">
+              <DashboardSidebar
+                customerCount={customers.length}
+                hasBusinessProfile={Boolean(businessContent)}
+              />
+            </div>
+
+            <div className="layout-span-full">
+              <BroadcastDeliveryList />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {activeView === "customers" ? (
+        <div
+          role="tabpanel"
+          id={customersPanelId}
+          aria-labelledby={customersTabId}
+          className="stack stack--loose"
+        >
           <CustomersSection
             customers={customers}
             onAddCustomer={handleAddCustomer}
@@ -289,15 +356,7 @@ export default function Dashboard() {
             search={search}
           />
         </div>
-
-        <div className="stack stack--loose">
-          <DashboardSidebar
-            customerCount={customers.length}
-            hasBusinessProfile={Boolean(businessContent)}
-          />
-          <BroadcastDeliveryList />
-        </div>
-      </div>
+      ) : null}
 
       {authLoading ? (
         <div className="callout" style={{ alignSelf: "flex-start" }}>

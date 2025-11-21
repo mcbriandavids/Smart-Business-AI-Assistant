@@ -166,7 +166,17 @@ const ProfilePage: React.FC = () => {
     }
   }
 
-  if (loading) return <CircularProgress />;
+  if (loading)
+    return (
+      <Box
+        minHeight="60vh"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <CircularProgress />
+      </Box>
+    );
 
   return (
     <Box
@@ -175,9 +185,13 @@ const ProfilePage: React.FC = () => {
       display="flex"
       justifyContent="center"
       alignItems="flex-start"
-      py={6}
+      py={{ xs: 4, md: 6 }}
+      px={{ xs: 2, md: 0 }}
     >
-      <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 600 }}>
+      <Paper
+        elevation={3}
+        sx={{ p: { xs: 3, md: 4 }, width: "100%", maxWidth: 640 }}
+      >
         <Typography
           variant="h5"
           gutterBottom
@@ -234,7 +248,11 @@ const ProfilePage: React.FC = () => {
           >
             Address
           </Typography>
-          <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+          <Box
+            display="grid"
+            gap={2}
+            sx={{ gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" } }}
+          >
             <TextField
               label="Street"
               value={form.address?.street || ""}
@@ -310,7 +328,11 @@ const ProfilePage: React.FC = () => {
           >
             Social Links
           </Typography>
-          <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+          <Box
+            display="grid"
+            gap={2}
+            sx={{ gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" } }}
+          >
             <TextField
               label="WhatsApp"
               value={form.social?.whatsapp || ""}
@@ -365,12 +387,21 @@ const ProfilePage: React.FC = () => {
             />
           </Box>
 
-          <Box mt={4} display="flex" gap={2}>
+          <Box
+            mt={4}
+            display="flex"
+            gap={2}
+            sx={{
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+            }}
+          >
             <Button
               type="submit"
               variant="contained"
               color="primary"
               disabled={saving}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
             >
               Save Changes
             </Button>
@@ -378,6 +409,7 @@ const ProfilePage: React.FC = () => {
               variant="outlined"
               color="secondary"
               onClick={() => navigate("/dashboard")}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
             >
               Cancel
             </Button>
