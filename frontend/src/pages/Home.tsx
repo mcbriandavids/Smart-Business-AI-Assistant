@@ -110,6 +110,9 @@ const Home: React.FC = () => {
               </Link>
             ))}
           </div>
+          <Link to="/help" className="landing-help-link">
+            Learn how SmartBuys AI positions your team →
+          </Link>
           <div className="landing-metrics">
             {insightBadges.map((badge) => (
               <div key={badge.label} className="landing-metric">

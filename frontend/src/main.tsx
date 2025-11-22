@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client";
+import type { Root } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./pages/App";
 import ErrorPage from "./pages/ErrorPage";
@@ -7,6 +8,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import HelpPage from "./pages/Help";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+import ResetPasswordPage from "./pages/ResetPassword";
 // cspell:ignore Styleguide
 // Lazy-load Styleguide and register it conditionally
 const Styleguide = lazy(() => import("./pages/Styleguide"));
@@ -32,6 +36,9 @@ const routes: any[] = [
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
+      { path: "reset-password", element: <ResetPasswordPage /> },
+      { path: "help", element: <HelpPage /> },
       {
         element: <ProtectedAdminRoute />,
         children: [{ path: "create-admin", element: <CreateAdmin /> }],
@@ -63,7 +70,20 @@ if (SHOW_STYLEGUIDE) {
 
 const router = createBrowserRouter(routes);
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root");
+
+if (!container) {
+  throw new Error("Root element with id 'root' was not found");
+}
+
+const host = container as HTMLElement & {
+  _reactRoot?: Root;
+};
+
+const root = host._reactRoot ?? ReactDOM.createRoot(container);
+host._reactRoot = root;
+
+root.render(
   <React.StrictMode>
     <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
       <RouterProvider

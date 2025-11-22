@@ -75,7 +75,8 @@ export function useAuth() {
         persistAuth(token as string, user);
 
         await fetchMe();
-        navigate("/dashboard");
+        const target = user?.role === "admin" ? "/admin" : "/dashboard";
+        navigate(target);
 
         return res.data;
       } catch (err: any) {

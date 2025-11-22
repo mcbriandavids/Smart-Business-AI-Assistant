@@ -79,12 +79,14 @@ export default function Register() {
   return (
     <section className="auth">
       <form className="card auth__form" onSubmit={onSubmit}>
+        <div className="auth__nav">
+          <Link to="/" className="btn btn--ghost auth__back">
+            ← Back to home
+          </Link>
+        </div>
         <h2>Create your account</h2>
         {error && <div className="alert alert--danger">{error}</div>}
-        <div
-          className="grid"
-          style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}
-        >
+        <div className="auth__field-grid auth__field-grid--two">
           <label>
             <span>First name</span>
             <input

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { login as persistAuth } from "../utils/auth";
 import {
   TextField,
   Button,
@@ -24,8 +25,8 @@ const AdminLogin: React.FC = () => {
     try {
       const res = await api.post("/api/auth/login", { email, password });
       if (res.data.success && res.data.data.user.role === "admin") {
-        localStorage.setItem("token", res.data.data.token);
-        navigate("/admin-dashboard");
+        persistAuth(res.data.data.token, res.data.data.user);
+        navigate("/admin");
       } else {
         setError("Access denied: Not an admin account.");
       }

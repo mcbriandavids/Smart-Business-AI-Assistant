@@ -57,6 +57,35 @@ router.post(
   Controller.login
 );
 
+// @desc    Request password reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+router.post(
+  "/forgot-password",
+  authLimiter,
+  validate({
+    body: Joi.object({
+      email: Joi.string().email().required(),
+    }),
+  }),
+  Controller.forgotPassword
+);
+
+// @desc    Reset password with token
+// @route   POST /api/auth/reset-password
+// @access  Public
+router.post(
+  "/reset-password",
+  authLimiter,
+  validate({
+    body: Joi.object({
+      token: Joi.string().required(),
+      password: Joi.string().min(6).required(),
+    }),
+  }),
+  Controller.resetPassword
+);
+
 // @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private

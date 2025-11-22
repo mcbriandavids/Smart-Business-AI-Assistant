@@ -13,23 +13,47 @@ const {
   agentToolRegistry,
   AgentToolExecutionError,
 } = require("../services/agent-tool-registry");
+const {
+  runLocalAgent,
+  isConfigured: isOllamaConfigured,
+} = require("../services/ollama-client");
 
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const openaiClient = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
 
 const agentModePreference = (process.env.AGENT_MODE || "auto").toLowerCase();
-const agentRuntimeMode =
-  agentModePreference === "mock" ? "mock" : openaiClient ? "live" : "mock";
 
-if (
-  agentRuntimeMode === "mock" &&
-  agentModePreference === "live" &&
-  !openaiClient
-) {
+const resolveAgentMode = () => {
+  const hasLive = Boolean(openaiClient);
+  const hasLocal = isOllamaConfigured();
+
+  switch (agentModePreference) {
+    case "mock":
+      return "mock";
+    case "live":
+      return hasLive ? "live" : hasLocal ? "local" : "mock";
+    case "local":
+      return hasLocal ? "local" : hasLive ? "live" : "mock";
+    default:
+      return hasLive ? "live" : hasLocal ? "local" : "mock";
+  }
+};
+
+const resolvedInitialMode = resolveAgentMode();
+
+if (agentModePreference === "live" && resolvedInitialMode !== "live") {
   console.warn(
-    "[Agent] OPENAI_API_KEY missing while AGENT_MODE=live. Falling back to mock responses."
+    "[Agent] OPENAI_API_KEY missing while AGENT_MODE=live. Falling back to alternative runtime."
   );
 }
+
+if (agentModePreference === "local" && resolvedInitialMode !== "local") {
+  console.warn(
+    "[Agent] OLLAMA_URL not configured while AGENT_MODE=local. Falling back to alternative runtime."
+  );
+}
+
+const getResponseMode = () => resolveAgentMode();
 
 const readField = (obj = {}, keys = [], fallback) => {
   for (const key of keys) {
@@ -69,8 +93,6 @@ const buildMockReply = (input, conversation) => {
 
   return `${base}${followUp}`;
 };
-
-const getResponseMode = () => agentRuntimeMode;
 
 const extractNumbers = (input = "") =>
   (input.match(/\d+(?:\.\d+)?/g) || []).map((value) => Number(value));
